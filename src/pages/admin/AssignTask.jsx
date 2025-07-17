@@ -53,11 +53,10 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
           key={day}
           type="button"
           onClick={() => handleDateClick(day)}
-          className={`h-8 w-8 rounded-full flex items-center justify-center text-sm ${
-            isSelected
-              ? "bg-purple-600 text-white"
-              : "hover:bg-purple-100 text-gray-700"
-          }`}
+          className={`h-8 w-8 rounded-full flex items-center justify-center text-sm ${isSelected
+            ? "bg-purple-600 text-white"
+            : "hover:bg-purple-100 text-gray-700"
+            }`}
         >
           {day}
         </button>
@@ -274,15 +273,15 @@ export default function AssignTask() {
   // NEW: Function to combine date and time into DD/MM/YYYY HH:MM:SS format
   const formatDateTimeForStorage = (date, time) => {
     if (!date || !time) return "";
-    
+
     const d = new Date(date);
     const day = d.getDate().toString().padStart(2, "0");
     const month = (d.getMonth() + 1).toString().padStart(2, "0");
     const year = d.getFullYear();
-    
+
     // Time is already in HH:MM format, just add :00 for seconds
     const timeWithSeconds = time + ":00";
-    
+
     return `${day}/${month}/${year} ${timeWithSeconds}`;
   };
 
@@ -295,17 +294,17 @@ export default function AssignTask() {
     const hour = now.getHours().toString().padStart(2, "0");
     const minute = now.getMinutes().toString().padStart(2, "0");
     const second = now.getSeconds().toString().padStart(2, "0");
-    
+
     return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
   };
 
   // NEW: Function to get formatted display for date and time
   const getFormattedDateTime = () => {
     if (!date) return "Select date and time";
-    
+
     const dateStr = formatDate(date);
     const timeStr = time || "09:00";
-    
+
     return `${dateStr} at ${timeStr}`;
   };
 
@@ -431,12 +430,12 @@ export default function AssignTask() {
   // NEW: Helper function to find next working day for a given date
   const findNextWorkingDay = (targetDate, workingDays) => {
     const targetDateStr = formatDateToDDMMYYYY(targetDate);
-    
+
     // If target date is already a working day, return it
     if (workingDays.includes(targetDateStr)) {
       return targetDateStr;
     }
-    
+
     // Otherwise, find the next working day
     let checkDate = new Date(targetDate);
     for (let i = 1; i <= 30; i++) { // Check up to 30 days ahead
@@ -446,155 +445,115 @@ export default function AssignTask() {
         return checkDateStr;
       }
     }
-    
+
     // If no working day found in 30 days, return the original target date
     return targetDateStr;
   };
 
-// UPDATED: generateTasks function with proper frequency logic
-const generateTasks = async () => {
-  if (!date || !time || !formData.doer || !formData.description || !formData.frequency) {
-    alert("Please fill in all required fields including date and time.");
-    return;
-  }
-
-  // Fetch working days from the sheet
-  const workingDays = await fetchWorkingDays();
-  if (workingDays.length === 0) {
-    alert("Could not retrieve working days. Please make sure the Working Day Calendar sheet is properly set up.");
-    return;
-  }
-
-  // Sort the working days chronologically
-  const sortedWorkingDays = [...workingDays].sort((a, b) => {
-    const [dayA, monthA, yearA] = a.split('/').map(Number);
-    const [dayB, monthB, yearB] = b.split('/').map(Number);
-    return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
-  });
-
-  const selectedDate = new Date(date);
-  const tasks = [];
-  
-  // For one-time tasks
-  if (formData.frequency === "one-time") {
-    // Filter out dates before the selected date (no back dates)
-    const futureDates = sortedWorkingDays.filter(dateStr => {
-      const [dateDay, month, year] = dateStr.split('/').map(Number);
-      const dateObj = new Date(year, month - 1, dateDay);
-      return dateObj >= selectedDate;
-    });
-
-    if (futureDates.length === 0) {
-      alert("No working days found on or after your selected date. Please choose a different start date or update the Working Day Calendar.");
+  // UPDATED: generateTasks function with proper frequency logic
+  const generateTasks = async () => {
+    if (!date || !time || !formData.doer || !formData.description || !formData.frequency) {
+      alert("Please fill in all required fields including date and time.");
       return;
     }
 
-    const startDateStr = formatDateToDDMMYYYY(selectedDate);
-    let startIndex = futureDates.findIndex(d => d === startDateStr);
-    
-    if (startIndex === -1) {
-      startIndex = 0;
-      alert(`The selected date (${startDateStr}) is not in the Working Day Calendar. The next available working day will be used instead: ${futureDates[0]}`);
+    // Fetch working days from the sheet
+    const workingDays = await fetchWorkingDays();
+    if (workingDays.length === 0) {
+      alert("Could not retrieve working days. Please make sure the Working Day Calendar sheet is properly set up.");
+      return;
     }
 
-    const taskDateStr = futureDates[startIndex];
-    const taskDateTimeStr = formatDateTimeForStorage(
-      new Date(taskDateStr.split('/').reverse().join('-')),
-      time
-    );
-    
-    tasks.push({
-      description: formData.description,
-      department: formData.department,
-      givenBy: formData.givenBy,
-      doer: formData.doer,
-      dueDate: taskDateTimeStr,
-      status: "pending",
-      frequency: formData.frequency,
-      enableReminders: formData.enableReminders,
-      requireAttachment: formData.requireAttachment,
+    // Sort the working days chronologically
+    const sortedWorkingDays = [...workingDays].sort((a, b) => {
+      const [dayA, monthA, yearA] = a.split('/').map(Number);
+      const [dayB, monthB, yearB] = b.split('/').map(Number);
+      return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
     });
-  } 
-  // For recurring tasks
-  else {
-    let currentDate = new Date(selectedDate);
-    
-    // For monthly tasks: Start from the exact selected date, regardless of whether it's a working day
-    if (formData.frequency === "monthly") {
-      for (let i = 0; i < 24; i++) { // Generate up to 24 months of tasks
-        let taskDate;
-        
-        if (i === 0) {
-          // First task: Use selected date if it's a working day, otherwise find next working day
-          const selectedDateStr = formatDateToDDMMYYYY(currentDate);
-          if (workingDays.includes(selectedDateStr)) {
-            taskDate = selectedDateStr;
-          } else {
-            taskDate = findNextWorkingDay(currentDate, workingDays);
-          }
-        } else {
-          // Subsequent tasks: Add months to the original selected date, then find working day
-          const targetDate = addMonths(selectedDate, i);
-          taskDate = findNextWorkingDay(targetDate, workingDays);
-        }
-        
-        // Check if the task date exists in our working days (future dates only)
-        const [taskDay, taskMonth, taskYear] = taskDate.split('/').map(Number);
-        const taskDateObj = new Date(taskYear, taskMonth - 1, taskDay);
-        
-        if (taskDateObj < selectedDate) {
-          continue; // Skip past dates
-        }
-        
-        if (!workingDays.includes(taskDate)) {
-          break; // Stop if we can't find a valid working day
-        }
-        
-        const taskDateTimeStr = formatDateTimeForStorage(
-          new Date(taskDate.split('/').reverse().join('-')),
-          time
-        );
-        
-        tasks.push({
-          description: formData.description,
-          department: formData.department,
-          givenBy: formData.givenBy,
-          doer: formData.doer,
-          dueDate: taskDateTimeStr,
-          status: "pending",
-          frequency: formData.frequency,
-          enableReminders: formData.enableReminders,
-          requireAttachment: formData.requireAttachment,
-        });
-      }
-    } 
-    // For all other recurring frequencies (daily, weekly, etc.)
-    else {
-      // Start with the selected date
-      let currentTaskDate = new Date(selectedDate);
-      
-      // Find the first working day on or after the selected date
-      let firstWorkingDay = findNextWorkingDay(currentTaskDate, workingDays);
-      if (!firstWorkingDay) {
+
+    const selectedDate = new Date(date);
+    const tasks = [];
+
+    // For one-time tasks
+    if (formData.frequency === "one-time") {
+      // Filter out dates before the selected date (no back dates)
+      const futureDates = sortedWorkingDays.filter(dateStr => {
+        const [dateDay, month, year] = dateStr.split('/').map(Number);
+        const dateObj = new Date(year, month - 1, dateDay);
+        return dateObj >= selectedDate;
+      });
+
+      if (futureDates.length === 0) {
         alert("No working days found on or after your selected date. Please choose a different start date or update the Working Day Calendar.");
         return;
       }
-      
-      // Convert first working day back to Date object
-      const [firstDay, firstMonth, firstYear] = firstWorkingDay.split('/').map(Number);
-      currentTaskDate = new Date(firstYear, firstMonth - 1, firstDay);
-      
-      // Generate tasks based on frequency
-      let taskCount = 0;
-      const maxTasks = 365; // Prevent infinite loops
-      
-      while (taskCount < maxTasks) {
-        // Check if current date is a working day
-        const currentDateStr = formatDateToDDMMYYYY(currentTaskDate);
-        
-        if (workingDays.includes(currentDateStr)) {
-          const taskDateTimeStr = formatDateTimeForStorage(currentTaskDate, time);
-          
+
+      const startDateStr = formatDateToDDMMYYYY(selectedDate);
+      let startIndex = futureDates.findIndex(d => d === startDateStr);
+
+      if (startIndex === -1) {
+        startIndex = 0;
+        alert(`The selected date (${startDateStr}) is not in the Working Day Calendar. The next available working day will be used instead: ${futureDates[0]}`);
+      }
+
+      const taskDateStr = futureDates[startIndex];
+      const taskDateTimeStr = formatDateTimeForStorage(
+        new Date(taskDateStr.split('/').reverse().join('-')),
+        time
+      );
+
+      tasks.push({
+        description: formData.description,
+        department: formData.department,
+        givenBy: formData.givenBy,
+        doer: formData.doer,
+        dueDate: taskDateTimeStr,
+        status: "pending",
+        frequency: formData.frequency,
+        enableReminders: formData.enableReminders,
+        requireAttachment: formData.requireAttachment,
+      });
+    }
+    // For recurring tasks
+    else {
+      let currentDate = new Date(selectedDate);
+
+      // For monthly tasks: Start from the exact selected date, regardless of whether it's a working day
+      if (formData.frequency === "monthly") {
+        for (let i = 0; i < 24; i++) { // Generate up to 24 months of tasks
+          let taskDate;
+
+          if (i === 0) {
+            // First task: Use selected date if it's a working day, otherwise find next working day
+            const selectedDateStr = formatDateToDDMMYYYY(currentDate);
+            if (workingDays.includes(selectedDateStr)) {
+              taskDate = selectedDateStr;
+            } else {
+              taskDate = findNextWorkingDay(currentDate, workingDays);
+            }
+          } else {
+            // Subsequent tasks: Add months to the original selected date, then find working day
+            const targetDate = addMonths(selectedDate, i);
+            taskDate = findNextWorkingDay(targetDate, workingDays);
+          }
+
+          // Check if the task date exists in our working days (future dates only)
+          const [taskDay, taskMonth, taskYear] = taskDate.split('/').map(Number);
+          const taskDateObj = new Date(taskYear, taskMonth - 1, taskDay);
+
+          if (taskDateObj < selectedDate) {
+            continue; // Skip past dates
+          }
+
+          if (!workingDays.includes(taskDate)) {
+            break; // Stop if we can't find a valid working day
+          }
+
+          const taskDateTimeStr = formatDateTimeForStorage(
+            new Date(taskDate.split('/').reverse().join('-')),
+            time
+          );
+
           tasks.push({
             description: formData.description,
             department: formData.department,
@@ -606,106 +565,146 @@ const generateTasks = async () => {
             enableReminders: formData.enableReminders,
             requireAttachment: formData.requireAttachment,
           });
-          
-          taskCount++;
         }
-        
-        // Calculate next date based on frequency
-        switch (formData.frequency) {
-          case "daily":
-            currentTaskDate = addDays(currentTaskDate, 1);
-            break;
-          case "weekly":
-            currentTaskDate = addDays(currentTaskDate, 7);
-            break;
-          case "fortnightly":
-            currentTaskDate = addDays(currentTaskDate, 14);
-            break;
-          case "quarterly":
-            currentTaskDate = addMonths(currentTaskDate, 3);
-            break;
-          case "yearly":
-            currentTaskDate = addYears(currentTaskDate, 1);
-            break;
-          case "end-of-1st-week":
-          case "end-of-2nd-week":
-          case "end-of-3rd-week":
-          case "end-of-4th-week":
-          case "end-of-last-week":
-            // For end-of-week frequencies, move to next month
-            currentTaskDate = addMonths(currentTaskDate, 1);
-            
-            // Find the appropriate week end date
-            let weekNumber;
-            switch (formData.frequency) {
-              case "end-of-1st-week": weekNumber = 1; break;
-              case "end-of-2nd-week": weekNumber = 2; break;
-              case "end-of-3rd-week": weekNumber = 3; break;
-              case "end-of-4th-week": weekNumber = 4; break;
-              case "end-of-last-week": weekNumber = -1; break;
-            }
-            
-            const weekEndDate = findEndOfWeekDate(currentTaskDate, weekNumber, workingDays);
-            if (weekEndDate) {
-              const [weekDay, weekMonth, weekYear] = weekEndDate.split('/').map(Number);
-              currentTaskDate = new Date(weekYear, weekMonth - 1, weekDay);
-            }
-            break;
-          default:
-            // Unknown frequency, break the loop
-            taskCount = maxTasks;
-            break;
+      }
+      // For all other recurring frequencies (daily, weekly, etc.)
+      else {
+        // Start with the selected date
+        let currentTaskDate = new Date(selectedDate);
+
+        // Find the first working day on or after the selected date
+        let firstWorkingDay = findNextWorkingDay(currentTaskDate, workingDays);
+        if (!firstWorkingDay) {
+          alert("No working days found on or after your selected date. Please choose a different start date or update the Working Day Calendar.");
+          return;
         }
-        
-        // Stop if we've gone too far into the future (e.g., 2 years)
-        const twoYearsFromNow = addYears(selectedDate, 2);
-        if (currentTaskDate > twoYearsFromNow) {
-          break;
+
+        // Convert first working day back to Date object
+        const [firstDay, firstMonth, firstYear] = firstWorkingDay.split('/').map(Number);
+        currentTaskDate = new Date(firstYear, firstMonth - 1, firstDay);
+
+        // Generate tasks based on frequency
+        let taskCount = 0;
+        const maxTasks = 365; // Prevent infinite loops
+
+        while (taskCount < maxTasks) {
+          // Check if current date is a working day
+          const currentDateStr = formatDateToDDMMYYYY(currentTaskDate);
+
+          if (workingDays.includes(currentDateStr)) {
+            const taskDateTimeStr = formatDateTimeForStorage(currentTaskDate, time);
+
+            tasks.push({
+              description: formData.description,
+              department: formData.department,
+              givenBy: formData.givenBy,
+              doer: formData.doer,
+              dueDate: taskDateTimeStr,
+              status: "pending",
+              frequency: formData.frequency,
+              enableReminders: formData.enableReminders,
+              requireAttachment: formData.requireAttachment,
+            });
+
+            taskCount++;
+          }
+
+          // Calculate next date based on frequency
+          switch (formData.frequency) {
+            case "daily":
+              currentTaskDate = addDays(currentTaskDate, 1);
+              break;
+            case "weekly":
+              currentTaskDate = addDays(currentTaskDate, 7);
+              break;
+            case "fortnightly":
+              currentTaskDate = addDays(currentTaskDate, 14);
+              break;
+            case "quarterly":
+              currentTaskDate = addMonths(currentTaskDate, 3);
+              break;
+            case "yearly":
+              currentTaskDate = addYears(currentTaskDate, 1);
+              break;
+            case "end-of-1st-week":
+            case "end-of-2nd-week":
+            case "end-of-3rd-week":
+            case "end-of-4th-week":
+            case "end-of-last-week":
+              // For end-of-week frequencies, move to next month
+              currentTaskDate = addMonths(currentTaskDate, 1);
+
+              // Find the appropriate week end date
+              let weekNumber;
+              switch (formData.frequency) {
+                case "end-of-1st-week": weekNumber = 1; break;
+                case "end-of-2nd-week": weekNumber = 2; break;
+                case "end-of-3rd-week": weekNumber = 3; break;
+                case "end-of-4th-week": weekNumber = 4; break;
+                case "end-of-last-week": weekNumber = -1; break;
+              }
+
+              const weekEndDate = findEndOfWeekDate(currentTaskDate, weekNumber, workingDays);
+              if (weekEndDate) {
+                const [weekDay, weekMonth, weekYear] = weekEndDate.split('/').map(Number);
+                currentTaskDate = new Date(weekYear, weekMonth - 1, weekDay);
+              }
+              break;
+            default:
+              // Unknown frequency, break the loop
+              taskCount = maxTasks;
+              break;
+          }
+
+          // Stop if we've gone too far into the future (e.g., 2 years)
+          const twoYearsFromNow = addYears(selectedDate, 2);
+          if (currentTaskDate > twoYearsFromNow) {
+            break;
+          }
         }
       }
     }
-  }
 
-  setGeneratedTasks(tasks);
-  setAccordionOpen(true);
-};
+    setGeneratedTasks(tasks);
+    setAccordionOpen(true);
+  };
 
   // Helper function to find the closest working day to a target date
   const findClosestWorkingDayIndex = (workingDays, targetDateStr) => {
     // Parse the target date (DD/MM/YYYY format)
     const [targetDay, targetMonth, targetYear] = targetDateStr.split('/').map(Number);
     const targetDate = new Date(targetYear, targetMonth - 1, targetDay);
-    
+
     // Find the closest working day (preferably after the target date)
     let closestIndex = -1;
     let minDifference = Infinity;
-    
+
     for (let i = 0; i < workingDays.length; i++) {
       const [workingDay, workingMonth, workingYear] = workingDays[i].split('/').map(Number);
       const currentDate = new Date(workingYear, workingMonth - 1, workingDay);
-      
+
       // Calculate difference in days
       const difference = Math.abs((currentDate - targetDate) / (1000 * 60 * 60 * 24));
-      
+
       if (currentDate >= targetDate && difference < minDifference) {
         minDifference = difference;
         closestIndex = i;
       }
     }
-    
+
     // If no working day found after the target date, find the closest one before
     if (closestIndex === -1) {
       for (let i = workingDays.length - 1; i >= 0; i--) {
         const [workingDay2, workingMonth2, workingYear2] = workingDays[i].split('/').map(Number);
         const currentDate2 = new Date(workingYear2, workingMonth2 - 1, workingDay2);
-        
+
         if (currentDate2 < targetDate) {
           closestIndex = i;
           break;
         }
       }
     }
-    
+
     return closestIndex !== -1 ? closestIndex : workingDays.length - 1;
   };
 
@@ -713,30 +712,30 @@ const generateTasks = async () => {
   const findEndOfWeekDate = (date, weekNumber, workingDays) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    
+
     // Get all working days in the target month (DD/MM/YYYY format)
     const daysInMonth = workingDays.filter(dateStr => {
       const [, m, y] = dateStr.split('/').map(Number);
       return y === year && m === month + 1;
     });
-    
+
     // Sort them chronologically
     daysInMonth.sort((a, b) => {
       const [dayA] = a.split('/').map(Number);
       const [dayB] = b.split('/').map(Number);
       return dayA - dayB;
     });
-    
+
     // Group by weeks (assuming Monday is the first day of the week)
     const weekGroups = [];
     let currentWeek = [];
     let lastWeekDay = -1;
-    
+
     for (const dateStr of daysInMonth) {
       const [workingDay2, m, y] = dateStr.split('/').map(Number);
       const dateObj = new Date(y, m - 1, workingDay2);
       const weekDay = dateObj.getDay(); // 0 for Sunday, 1 for Monday, etc.
-      
+
       if (weekDay <= lastWeekDay || currentWeek.length === 0) {
         if (currentWeek.length > 0) {
           weekGroups.push(currentWeek);
@@ -745,14 +744,14 @@ const generateTasks = async () => {
       } else {
         currentWeek.push(dateStr);
       }
-      
+
       lastWeekDay = weekDay;
     }
-    
+
     if (currentWeek.length > 0) {
       weekGroups.push(currentWeek);
     }
-    
+
     // Return the last day of the requested week
     if (weekNumber === -1) {
       // Last week of the month
@@ -766,88 +765,116 @@ const generateTasks = async () => {
     }
   };
 
- // UPDATED: handleSubmit function with proper sheet selection logic and datetime format
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+  // UPDATED: handleSubmit function with department-specific sheet logic
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  try {
-    if (generatedTasks.length === 0) {
-      alert("Please generate tasks first by clicking Preview Generated Tasks");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Determine the sheet based on frequency:
-    // - "one-time" frequency → DELEGATION sheet (department doesn't matter)
-    // - All other frequencies → Checklist sheet
-    const submitSheetName = formData.frequency === "one-time" ? "DELEGATION" : "Checklist";
-
-    // Get the last task ID from the appropriate sheet
-    const lastTaskId = await getLastTaskId(submitSheetName);
-    let nextTaskId = lastTaskId + 1;
-
-    // Prepare all tasks data for batch insertion
-    const tasksData = generatedTasks.map((task, index) => ({
-      timestamp: getCurrentTimestamp(), // FIXED: Use current timestamp with actual time
-      taskId: (nextTaskId + index).toString(),
-      firm: task.department,                    // Maps to Column C
-      givenBy: task.givenBy,                    // Maps to Column D
-      name: task.doer,                          // Maps to Column E
-      description: task.description,            // Maps to Column F
-      startDate: task.dueDate,                  // Maps to Column G - now in DD/MM/YYYY HH:MM:SS format
-      freq: task.frequency,                     // Maps to Column H
-      enableReminders: task.enableReminders ? "Yes" : "No",    // Maps to Column I
-      requireAttachment: task.requireAttachment ? "Yes" : "No"  // Maps to Column J
-    }));
-
-    console.log(`Submitting ${tasksData.length} tasks in batch to ${submitSheetName} sheet:`, tasksData);
-
-    // Submit all tasks in one batch to Google Sheets
-    const formPayload = new FormData();
-    formPayload.append("sheetName", submitSheetName);
-    formPayload.append("action", "insert");
-    formPayload.append("batchInsert", "true");
-    formPayload.append("rowData", JSON.stringify(tasksData));
-
-    await fetch(
-      "https://script.google.com/macros/s/AKfycbzXzqnKmbeXw3i6kySQcBOwxHQA7y8WBFfEe69MPbCR-jux0Zte7-TeSKi8P4CIFkhE/exec",
-      {
-        method: "POST",
-        body: formPayload,
-        mode: "no-cors",
+    try {
+      if (generatedTasks.length === 0) {
+        alert("Please generate tasks first by clicking Preview Generated Tasks");
+        setIsSubmitting(false);
+        return;
       }
-    );
 
-    // Show a success message with the appropriate sheet name
-    alert(`Successfully submitted ${generatedTasks.length} tasks to ${submitSheetName} sheet in one batch!`);
+      // Validate that department is selected
+      if (!formData.department || formData.department.trim() === "") {
+        alert("Please select a department before submitting tasks");
+        setIsSubmitting(false);
+        return;
+      }
 
-    // Reset form
-    setFormData({
-      department: "",
-      givenBy: "",
-      doer: "",
-      description: "",
-      frequency: "daily",
-      enableReminders: true,
-      requireAttachment: false
-    });
-    setSelectedDate(null);
-    setTime("09:00"); // Reset time to default
-    setGeneratedTasks([]);
-    setAccordionOpen(false);
-  } catch (error) {
-    console.error("Submission error:", error);
-    alert("Failed to assign tasks. Please try again.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      // NEW: Determine the sheet based on department and frequency:
+      // - "one-time" frequency → DELEGATION sheet (department doesn't matter)
+      // - All other frequencies → Department-specific sheet (using department name as sheet name)
+      let submitSheetName;
+
+      if (formData.frequency === "one-time") {
+        submitSheetName = "DELEGATION";
+      } else {
+        // Use the selected department name as the sheet name
+        submitSheetName = formData.department.trim();
+      }
+
+      console.log(`Selected department: ${formData.department}`);
+      console.log(`Target sheet: ${submitSheetName}`);
+
+      // Get the last task ID from the appropriate sheet
+      const lastTaskId = await getLastTaskId(submitSheetName);
+      let nextTaskId = lastTaskId + 1;
+
+      // Prepare all tasks data for batch insertion
+      const tasksData = generatedTasks.map((task, index) => ({
+        timestamp: getCurrentTimestamp(), // FIXED: Use current timestamp with actual time
+        taskId: (nextTaskId + index).toString(),
+        firm: task.department,                    // Maps to Column C
+        givenBy: task.givenBy,                    // Maps to Column D
+        name: task.doer,                          // Maps to Column E
+        description: task.description,            // Maps to Column F
+        startDate: task.dueDate,                  // Maps to Column G - now in DD/MM/YYYY HH:MM:SS format
+        freq: task.frequency,                     // Maps to Column H
+        enableReminders: task.enableReminders ? "Yes" : "No",    // Maps to Column I
+        requireAttachment: task.requireAttachment ? "Yes" : "No"  // Maps to Column J
+      }));
+
+      console.log(`Submitting ${tasksData.length} tasks in batch to ${submitSheetName} sheet:`, tasksData);
+
+      // Submit all tasks in one batch to Google Sheets
+      const formPayload = new FormData();
+      formPayload.append("sheetName", submitSheetName);
+      formPayload.append("action", "insert");
+      formPayload.append("batchInsert", "true");
+      formPayload.append("rowData", JSON.stringify(tasksData));
+
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbzXzqnKmbeXw3i6kySQcBOwxHQA7y8WBFfEe69MPbCR-jux0Zte7-TeSKi8P4CIFkhE/exec",
+        {
+          method: "POST",
+          body: formPayload,
+          mode: "no-cors",
+        }
+      );
+
+      // Show a success message with the appropriate sheet name
+      alert(`Successfully submitted ${generatedTasks.length} tasks to ${submitSheetName} sheet in one batch!`);
+
+      // Reset form
+      setFormData({
+        department: "",
+        givenBy: "",
+        doer: "",
+        description: "",
+        frequency: "daily",
+        enableReminders: true,
+        requireAttachment: false
+      });
+      setSelectedDate(null);
+      setTime("09:00"); // Reset time to default
+      setGeneratedTasks([]);
+      setAccordionOpen(false);
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert("Failed to assign tasks. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Helper function to format date for display in preview
   const formatDateForDisplay = (dateTimeStr) => {
     // dateTimeStr is in format "DD/MM/YYYY HH:MM:SS"
     return dateTimeStr;
+  };
+
+  // NEW: Function to get the target sheet display name for preview
+  const getTargetSheetDisplay = () => {
+    if (!formData.department) return "Please select a department first";
+
+    if (formData.frequency === "one-time") {
+      return "DELEGATION sheet";
+    } else {
+      return `${formData.department} sheet`;
+    }
   };
 
   return (
@@ -873,7 +900,7 @@ const handleSubmit = async (e) => {
                   htmlFor="department"
                   className="block text-sm font-medium text-purple-700"
                 >
-                  Department Name
+                  Department Name *
                 </label>
                 <select
                   id="department"
@@ -890,6 +917,11 @@ const handleSubmit = async (e) => {
                     </option>
                   ))}
                 </select>
+                {formData.department && (
+                  <p className="text-xs text-purple-600">
+                    Tasks will be stored in: {getTargetSheetDisplay()}
+                  </p>
+                )}
               </div>
 
               {/* Given By Dropdown */}
@@ -1131,16 +1163,15 @@ const handleSubmit = async (e) => {
                         className="w-full flex justify-between items-center p-4 text-purple-700 hover:bg-purple-50 focus:outline-none"
                       >
                         <span className="font-medium">
-                          {generatedTasks.length} Tasks Generated 
-                          {formData.frequency === "one-time" 
-                            ? " (Will be stored in DELEGATION sheet)" 
-                            : " (Will be stored in Checklist sheet)"
+                          {generatedTasks.length} Tasks Generated
+                          {formData.frequency === "one-time"
+                            ? " (Will be stored in DELEGATION sheet)"
+                            : ` (Will be stored in ${formData.department} sheet)`
                           }
                         </span>
                         <svg
-                          className={`w-5 h-5 transition-transform ${
-                            accordionOpen ? "rotate-180" : ""
-                          }`}
+                          className={`w-5 h-5 transition-transform ${accordionOpen ? "rotate-180" : ""
+                            }`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
