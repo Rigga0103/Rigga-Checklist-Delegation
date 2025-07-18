@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { CheckSquare, ClipboardList, Home, LogOut, Menu, Database, ChevronDown, ChevronRight, Zap, FileText, X, Play, Pause } from 'lucide-react'
+import { CheckSquare, ClipboardList, Home, LogOut, Menu, Database, ChevronDown, ChevronRight, Zap, FileText, X, Play, Pause, KeyRound, Video } from 'lucide-react'
 
 export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
   const location = useLocation()
@@ -91,6 +91,22 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       submenu: true,
       showFor: ["admin", "user"] // Show for both roles
     },
+
+    {
+      href: "/dashboard/license",
+      label: "License",
+      icon: KeyRound,
+      active: location.pathname === "/dashboard/license",
+      showFor: ["admin", "user"] // show both
+    },
+
+    {
+      href: "/dashboard/traning-video",
+      label: "Training Video",
+      icon: Video,
+      active: location.pathname === "/dashboard/traning-video",
+      showFor: ["admin", "user"] //  show both
+    },
   ]
 
   const getAccessibleDepartments = () => {
@@ -133,11 +149,11 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
         : url;
     };
 
-    const videoUrl = userRole === "admin"
-      ? "https://youtu.be/v2yqJc1CKBA?si=J_r0PAIlGOqkHsz3"
-      : "https://youtu.be/v2yqJc1CKBA?si=J_r0PAIlGOqkHsz3"
+    // const videoUrl = userRole === "admin"
+    //   ? "https://youtu.be/v2yqJc1CKBA?si=J_r0PAIlGOqkHsz3"
+    //   : "https://youtu.be/v2yqJc1CKBA?si=J_r0PAIlGOqkHsz3"
 
-    const embedUrl = getYouTubeEmbedUrl(videoUrl);
+    // const embedUrl = getYouTubeEmbedUrl(videoUrl);
 
     const handleVideoToggle = () => {
       setIsVideoPlaying(!isVideoPlaying)
@@ -147,7 +163,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
           {/* Modal Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          {/* <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800">License & Help</h2>
             <button
               onClick={() => {
@@ -158,12 +174,12 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
             >
               <X className="h-5 w-5" />
             </button>
-          </div>
+          </div> */}
 
           {/* Modal Content */}
           <div className="flex h-[80vh]">
             {/* Left Section - License Terms */}
-            <div className="w-1/2 p-6 overflow-y-auto border-r border-gray-200">
+            {/* <div className="w-1/2 p-6 overflow-y-auto border-r border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">License Terms & Conditions</h3>
               <div className="text-sm text-gray-600 space-y-4">
                 <p className="font-medium text-gray-800">SOFTWARE LICENSE AGREEMENT</p>
@@ -215,10 +231,10 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                   </p>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Right Section - Help Video */}
-            <div className="w-1/2 p-6">
+            {/* <div className="w-1/2 p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Help Video {userRole === "admin" ? "(Admin Guide)" : "(User Guide)"}
               </h3>
@@ -286,7 +302,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                   </ul>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -509,14 +525,14 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  {/* <button
                     onClick={() => setIsLicenseModalOpen(true)}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-md shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1"
                     title="License & Help"
                   >
                     <FileText className="h-3 w-3" />
                     <span className="text-xs font-medium">License</span>
-                  </button>
+                  </button> */}
                   {toggleDarkMode && (
                     <button
                       onClick={toggleDarkMode}
@@ -556,14 +572,14 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
         <header className="flex h-14 items-center justify-between border-b border-blue-200 bg-white px-4 md:px-6">
           <div className="flex md:hidden w-8"></div>
           <h1 className="text-lg font-semibold text-blue-700">Checklist & Delegation</h1>
-          <button
+          {/* <button
             onClick={() => setIsLicenseModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
             title="License & Help"
           >
             <FileText className="h-4 w-4" />
             <span className="text-sm font-medium">License</span>
-          </button>
+          </button> */}
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-br from-blue-50 to-purple-50">
           {children}

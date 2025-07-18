@@ -36,8 +36,8 @@ const PrivateRoute = ({ children, allowedRoles }) => {
 
   if (!allowedRoles.includes(userRole)) {
     // Redirect to unauthorized page or dashboard based on role
-    return userRole === 'admin' 
-      ? <Navigate to="/admin/dashboard" replace /> 
+    return userRole === 'admin'
+      ? <Navigate to="/admin/dashboard" replace />
       : <Navigate to="/user/dashboard" replace />
   }
 
@@ -112,19 +112,19 @@ function App() {
         <Route
           path="/user/quick-task"
           element={
-            <PrivateRoute allowedRoles={['admin','user']}>
+            <PrivateRoute allowedRoles={['admin', 'user']}>
               <AdminLayout darkMode={darkMode} toggleDarkMode={toggleDarkMode}>
                 <AdminQuickTask />
               </AdminLayout>
             </PrivateRoute>
           }
         />
-         <Route
+        <Route
           path="/delegation-task"
           element={
             <PrivateRoute allowedRoles={['admin']}>
               <AdminLayout darkMode={darkMode} toggleDarkMode={toggleDarkMode}>
-                <AdminDelegationTask/>
+                <AdminDelegationTask />
               </AdminLayout>
             </PrivateRoute>
           }

@@ -12,6 +12,8 @@ import AccountDataPage from "./pages/delegation"
 import QuickTask from "./pages/QuickTask"
 import AdminDelegationTask from "./pages/delegation-data"
 import "./index.css"
+import License from "./pages/License"
+import TrainingVideo from "./pages/TrainingVideo"
 
 // Auth wrapper component to protect routes
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -128,6 +130,24 @@ function App() {
           }
         />
 
+        <Route
+          path="/dashboard/license"
+          element={
+            <ProtectedRoute>
+              <License />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/traning-video"
+          element={
+            <ProtectedRoute>
+              <TrainingVideo />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Specific route for Admin Data Page */}
         <Route
           path="/dashboard/data/admin"
@@ -145,6 +165,8 @@ function App() {
         <Route path="/admin/assign-task" element={<Navigate to="/dashboard/assign-task" replace />} />
         <Route path="/admin/delegation-task" element={<Navigate to="/dashboard/delegation-task" replace />} />
         <Route path="/admin/data/:category" element={<Navigate to="/dashboard/data/:category" replace />} />
+        <Route path="/admin/license" element={<Navigate to="/dashboard/license" replace />} />
+        <Route path="/admin/traning-video" element={<Navigate to="/dashboard/traning-video" replace />} />
         <Route path="/user/*" element={<Navigate to="/dashboard/admin" replace />} />
       </Routes>
     </Router>
