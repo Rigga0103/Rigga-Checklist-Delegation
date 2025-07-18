@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { CheckCircle2, Upload, X, Search, History, ArrowLeft } from "lucide-react"
+import { CheckCircle2, Upload, X, Search, History, ArrowLeft, Filter, ChevronDown } from "lucide-react"
 import AdminLayout from "../components/layout/AdminLayout"
 
 // Configuration object - Move all configurations here
@@ -60,6 +60,12 @@ function DelegationDataPage() {
   const [endDate, setEndDate] = useState("")
   const [userRole, setUserRole] = useState("")
   const [username, setUsername] = useState("")
+  const [nameFilter, setNameFilter] = useState("")
+  const [departmentFilter, setDepartmentFilter] = useState("")
+  const [dropdownOpen, setDropdownOpen] = useState({
+    name: false,
+    department: false
+  })
 
   // Debounced search term for better performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
@@ -373,6 +379,8 @@ function DelegationDataPage() {
     setSearchTerm("")
     setStartDate("")
     setEndDate("")
+    setNameFilter("")
+    setDepartmentFilter("")
   }, [])
 
   // Get color based on data from column R
@@ -394,7 +402,48 @@ function DelegationDataPage() {
     }
   }, [])
 
-  // Optimized filtered data with debounced search
+  // Get all unique names and departments for admin filters
+  const allNames = useMemo(() => {
+    return [...new Set(accountData.map(account => account["col4"]))]
+      .filter(name => name && typeof name === "string" && name.trim() !== "")
+      .sort()
+  }, [accountData])
+
+  const allDepartments = useMemo(() => {
+    return [...new Set(accountData.map(account => account["col2"]))]
+      .filter(dept => dept && typeof dept === "string" && dept.trim() !== "")
+      .sort()
+  }, [accountData])
+
+  // Toggle dropdown
+  const toggleDropdown = useCallback((dropdown) => {
+    setDropdownOpen(prev => ({
+      ...prev,
+      [dropdown]: !prev[dropdown]
+    }))
+  }, [])
+
+  // Handle filter selection
+  const handleNameFilterSelect = useCallback((name) => {
+    setNameFilter(name)
+    setDropdownOpen(prev => ({ ...prev, name: false }))
+  }, [])
+
+  const handleDepartmentFilterSelect = useCallback((dept) => {
+    setDepartmentFilter(dept)
+    setDropdownOpen(prev => ({ ...prev, department: false }))
+  }, [])
+
+  // Clear filters
+  const clearNameFilter = useCallback(() => {
+    setNameFilter("")
+  }, [])
+
+  const clearDepartmentFilter = useCallback(() => {
+    setDepartmentFilter("")
+  }, [])
+
+  // Optimized filtered data with debounced search and admin filters
   const filteredAccountData = useMemo(() => {
     const filtered = debouncedSearchTerm
       ? accountData.filter((account) =>
@@ -404,8 +453,19 @@ function DelegationDataPage() {
       )
       : accountData
 
-    return filtered.sort(sortDateWise)
-  }, [accountData, debouncedSearchTerm, sortDateWise])
+    // Apply admin filters if user is admin
+    let adminFiltered = filtered
+    if (userRole === "admin") {
+      if (nameFilter) {
+        adminFiltered = adminFiltered.filter(account => account["col4"] === nameFilter)
+      }
+      if (departmentFilter) {
+        adminFiltered = adminFiltered.filter(account => account["col2"] === departmentFilter)
+      }
+    }
+
+    return adminFiltered.sort(sortDateWise)
+  }, [accountData, debouncedSearchTerm, sortDateWise, userRole, nameFilter, departmentFilter])
 
   // Updated history filtering with user filter based on column H
   const filteredHistoryData = useMemo(() => {
@@ -894,7 +954,7 @@ function DelegationDataPage() {
 
           <div className="flex space-x-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-5 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
                 placeholder={showHistory ? "Search by Task ID..." : "Search tasks..."}
@@ -903,6 +963,75 @@ function DelegationDataPage() {
                 className="pl-10 pr-4 py-2 border border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
+
+            {/* Admin-only filters */}
+            {userRole === "admin" && !showHistory && (
+              <>
+                <div className="relative">
+                  <button
+                    onClick={() => toggleDropdown('name')}
+                    className="flex items-center gap-2 px-3 py-2 border border-purple-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    <Filter className="h-4 w-4" />
+                    {nameFilter || 'Filter by Name'}
+                    <ChevronDown size={16} className={`transition-transform ${dropdownOpen.name ? 'rotate-180' : ''}`} />
+                  </button>
+                  {dropdownOpen.name && (
+                    <div className="absolute z-50 mt-1 w-56 rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto">
+                      <div className="py-1">
+                        <button
+                          onClick={clearNameFilter}
+                          className={`block w-full text-left px-4 py-2 text-sm ${!nameFilter ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                          All Names
+                        </button>
+                        {allNames.map(name => (
+                          <button
+                            key={name}
+                            onClick={() => handleNameFilterSelect(name)}
+                            className={`block w-full text-left px-4 py-2 text-sm ${nameFilter === name ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <button
+                    onClick={() => toggleDropdown('department')}
+                    className="flex items-center gap-2 px-3 py-2 border border-purple-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    <Filter className="h-4 w-4" />
+                    {departmentFilter || 'Filter by Department'}
+                    <ChevronDown size={16} className={`transition-transform ${dropdownOpen.department ? 'rotate-180' : ''}`} />
+                  </button>
+                  {dropdownOpen.department && (
+                    <div className="absolute z-50 mt-1 w-56 rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto">
+                      <div className="py-1">
+                        <button
+                          onClick={clearDepartmentFilter}
+                          className={`block w-full text-left px-4 py-2 text-sm ${!departmentFilter ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                          All Departments
+                        </button>
+                        {allDepartments.map(dept => (
+                          <button
+                            key={dept}
+                            onClick={() => handleDepartmentFilterSelect(dept)}
+                            className={`block w-full text-left px-4 py-2 text-sm ${departmentFilter === dept ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                          >
+                            {dept}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             <button
               onClick={toggleHistory}
@@ -1364,7 +1493,9 @@ function DelegationDataPage() {
                   ) : (
                     <tr>
                       <td colSpan={12} className="px-6 py-4 text-center text-gray-500">
-                        {searchTerm ? "No tasks matching your search" : "No pending tasks found"}
+                        {searchTerm || nameFilter || departmentFilter
+                          ? "No tasks matching your filters"
+                          : "No pending tasks found"}
                       </td>
                     </tr>
                   )}
