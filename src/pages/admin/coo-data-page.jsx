@@ -582,148 +582,141 @@ function AccountDataPage() {
 
   // UPDATED: MAIN SUBMIT FUNCTION - Now also updates Admin Done column (Column P)
   const handleSubmit = async () => {
-    const selectedItemsArray = Array.from(selectedItems)
+    const selectedItemsArray = Array.from(selectedItems);
     if (selectedItemsArray.length === 0) {
-      alert("Please select at least one item to submit")
-      return
+      alert("Please select at least one item to submit");
+      return;
     }
+
+    // Existing validation checks remain the same
     const missingRemarks = selectedItemsArray.filter((id) => {
-      const additionalStatus = additionalData[id]
-      const remarks = remarksData[id]
-      return additionalStatus === "No" && (!remarks || remarks.trim() === "")
-    })
+      const additionalStatus = additionalData[id];
+      const remarks = remarksData[id];
+      return additionalStatus === "No" && (!remarks || remarks.trim() === "");
+    });
+
     if (missingRemarks.length > 0) {
-      alert(`Please provide remarks for items marked as "No". ${missingRemarks.length} item(s) are missing remarks.`)
-      return
+      alert(`Please provide remarks for items marked as "No". ${missingRemarks.length} item(s) are missing remarks.`);
+      return;
     }
+
     const missingRequiredImages = selectedItemsArray.filter((id) => {
-      const item = accountData.find((account) => account._id === id)
-      const requiresAttachment = item["col9"] && item["col9"].toUpperCase() === "YES"
-      return requiresAttachment && !item.image
-    })
+      const item = accountData.find((account) => account._id === id);
+      const requiresAttachment = item["col9"] && item["col9"].toUpperCase() === "YES";
+      return requiresAttachment && !item.image;
+    });
+
     if (missingRequiredImages.length > 0) {
       alert(
-        `Please upload images for all required attachments. ${missingRequiredImages.length} item(s) are missing required images.`,
-      )
-      return
+        `Please upload images for all required attachments. ${missingRequiredImages.length} item(s) are missing required images.`
+      );
+      return;
     }
-    setIsSubmitting(true)
-    try {
-      const today = new Date()
-      // UPDATED: Store actual completion date-time in DD/MM/YYYY HH:MM:SS format
-      const todayFormatted = formatDateTimeToDDMMYYYY(today)
 
-      // Prepare submitted items for history BEFORE removing from pending
+    setIsSubmitting(true);
+    try {
+      const today = new Date();
+      // Format as DD/MM/YYYY HH:MM:SS for column K
+      const todayFormatted = formatDateTimeToDDMMYYYY(today);
+
+      // Prepare data for submission
+      const submissionData = [];
+      const imageUploadPromises = [];
+
+      // First handle all image uploads
+      for (const id of selectedItemsArray) {
+        const item = accountData.find((account) => account._id === id);
+
+        if (item.image instanceof File) {
+          const uploadPromise = fileToBase64(item.image)
+            .then(async (base64Data) => {
+              const formData = new FormData();
+              formData.append("action", "uploadFile");
+              formData.append("base64Data", base64Data);
+              formData.append("fileName", `task_${item["col1"]}_${Date.now()}.${item.image.name.split(".").pop()}`);
+              formData.append("mimeType", item.image.type);
+              formData.append("folderId", CONFIG.DRIVE_FOLDER_ID);
+
+              const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+                method: "POST",
+                body: formData,
+              });
+              return response.json();
+            })
+            .then((result) => {
+              if (result.success) {
+                return { id, imageUrl: result.fileUrl };
+              }
+              return { id, imageUrl: "" };
+            });
+
+          imageUploadPromises.push(uploadPromise);
+        }
+      }
+
+      // Wait for all image uploads to complete
+      const uploadResults = await Promise.all(imageUploadPromises);
+      const imageUrlMap = uploadResults.reduce((acc, result) => {
+        acc[result.id] = result.imageUrl;
+        return acc;
+      }, {});
+
+      // Prepare submission data
+      for (const id of selectedItemsArray) {
+        const item = accountData.find((account) => account._id === id);
+        submissionData.push({
+          taskId: item["col1"], // Column B
+          rowIndex: item._rowIndex,
+          actualDate: todayFormatted, // Column K (formatted as DD/MM/YYYY HH:MM:SS)
+          status: additionalData[id] || "", // Column M
+          remarks: remarksData[id] || "", // Column N
+          imageUrl: imageUrlMap[id] || (item.image && typeof item.image === "string" ? item.image : ""), // Column O
+        });
+      }
+
+      // Optimistic UI updates
       const submittedItemsForHistory = selectedItemsArray.map((id) => {
-        const item = accountData.find((account) => account._id === id)
+        const item = accountData.find((account) => account._id === id);
         return {
           ...item,
-          col10: todayFormatted, // Actual completion date-time
-          col12: additionalData[id] || "", // Status (Yes/No)
-          col13: remarksData[id] || "", // Remarks
-          col14: item.image ? (typeof item.image === "string" ? item.image : "") : "", // Image URL (will be updated after upload)
-          col15: "Done", // NEW: Admin Done status (Column P)
-        }
-      })
+          col10: todayFormatted, // Column K
+          col12: additionalData[id] || "", // Column M
+          col13: remarksData[id] || "", // Column N
+          col14: imageUrlMap[id] || (item.image && typeof item.image === "string" ? item.image : ""), // Column O
+        };
+      });
 
-      // CACHE MEMORY UPDATE 1: Remove submitted items from pending table immediately
-      setAccountData((prev) => prev.filter((item) => !selectedItems.has(item._id)))
+      // Update local state
+      setAccountData((prev) => prev.filter((item) => !selectedItems.has(item._id)));
+      setHistoryData((prev) => [...submittedItemsForHistory, ...prev]);
+      setSelectedItems(new Set());
+      setAdditionalData({});
+      setRemarksData({});
+      setSuccessMessage(`Successfully submitted ${selectedItemsArray.length} task(s)!`);
 
-      // CACHE MEMORY UPDATE 2: Add submitted items to history immediately
-      setHistoryData((prev) => [...submittedItemsForHistory, ...prev])
+      // Submit to Google Sheets
+      const formData = new FormData();
+      formData.append("sheetName", CONFIG.SHEET_NAME);
+      formData.append("action", "updateTaskData");
+      formData.append("rowData", JSON.stringify(submissionData));
 
-      // Clear selections and form data immediately
-      setSelectedItems(new Set())
-      setAdditionalData({})
-      setRemarksData({})
-
-      // Show success message immediately
-      setSuccessMessage(`Successfully processed ${selectedItemsArray.length} task records! Tasks moved to history with Admin Done status.`)
-
-      // Auto-clear success message after 5 seconds
-      setTimeout(() => {
-        setSuccessMessage("")
-      }, 5000)
-
-      // Now handle the background submission to Google Sheets
-      const submissionData = await Promise.all(
-        selectedItemsArray.map(async (id) => {
-          const item = accountData.find((account) => account._id === id)
-          console.log(`Preparing submission for item:`, {
-            id: id,
-            taskId: item["col1"],
-            rowIndex: item._rowIndex,
-            expectedTaskId: item._taskId,
-          })
-          let imageUrl = ""
-          if (item.image instanceof File) {
-            try {
-              const base64Data = await fileToBase64(item.image)
-              const uploadFormData = new FormData()
-              uploadFormData.append("action", "uploadFile")
-              uploadFormData.append("base64Data", base64Data)
-              uploadFormData.append(
-                "fileName",
-                `task_${item["col1"]}_${Date.now()}.${item.image.name.split(".").pop()}`,
-              )
-              uploadFormData.append("mimeType", item.image.type)
-              uploadFormData.append("folderId", CONFIG.DRIVE_FOLDER_ID)
-              const uploadResponse = await fetch(CONFIG.APPS_SCRIPT_URL, {
-                method: "POST",
-                body: uploadFormData,
-              })
-              const uploadResult = await uploadResponse.json()
-              if (uploadResult.success) {
-                imageUrl = uploadResult.fileUrl
-                // Update the history data with the actual image URL
-                setHistoryData((prev) =>
-                  prev.map((historyItem) =>
-                    historyItem._id === id ? { ...historyItem, col14: imageUrl } : historyItem,
-                  ),
-                )
-              }
-            } catch (uploadError) {
-              console.error("Error uploading image:", uploadError)
-            }
-          }
-          return {
-            taskId: item["col1"],
-            rowIndex: item._rowIndex,
-            actualDate: todayFormatted, // UPDATED: Now includes time
-            status: additionalData[id] || "",
-            remarks: remarksData[id] || "",
-            imageUrl: imageUrl,
-            adminDoneStatus: "Done", // NEW: Admin Done status for Column P
-          }
-        }),
-      )
-      console.log("Final submission data:", submissionData)
-
-      // Submit to Google Sheets in background
-      const formData = new FormData()
-      formData.append("sheetName", CONFIG.SHEET_NAME)
-      formData.append("action", "updateTaskDataWithAdminDone") // Action for updating task completion with Admin Done
-      formData.append("rowData", JSON.stringify(submissionData))
       const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
         method: "POST",
         body: formData,
-      })
-      const result = await response.json()
+      });
+
+      const result = await response.json();
       if (!result.success) {
-        // If submission failed, we could optionally rollback the cache changes
-        console.error("Background submission failed:", result.error)
-        // For now, we'll just log the error but keep the UI updated
-        // You could implement rollback logic here if needed
+        console.error("Background submission failed:", result.error);
+        // Optionally show an error message
       }
     } catch (error) {
-      console.error("Submission error:", error)
-      // Since we already updated the UI optimistically, we could rollback here
-      // For now, we'll just show an error but keep the UI changes
-      alert("Warning: There was an error with background submission, but your changes are saved locally.")
+      console.error("Submission error:", error);
+      alert("Error occurred during submission. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Convert Set to Array for display
   const selectedItemsCount = selectedItems.size

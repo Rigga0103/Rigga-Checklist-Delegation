@@ -155,9 +155,9 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
 
     // const embedUrl = getYouTubeEmbedUrl(videoUrl);
 
-    const handleVideoToggle = () => {
-      setIsVideoPlaying(!isVideoPlaying)
-    }
+    // const handleVideoToggle = () => {
+    //   setIsVideoPlaying(!isVideoPlaying)
+    // }
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
