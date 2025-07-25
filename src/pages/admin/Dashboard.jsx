@@ -177,15 +177,6 @@ export default function AdminDashboard() {
     return date.getTime() === tomorrow.getTime()
   }
 
-  // Function to check if a date is in the future (from tomorrow onwards)
-  const isDateFuture = (dateStr) => {
-    const date = parseDateFromDDMMYYYY(dateStr)
-    if (!date) return false
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return date > today
-  }
-
   // Safe access to cell value
   const getCellValue = (row, index) => {
     if (!row || !row.c || index >= row.c.length) return null
@@ -680,7 +671,7 @@ export default function AdminDashboard() {
     return true;
   });
 
-  // UPDATED: Get tasks by view with updated delegation logic
+  // Get tasks by view with date-based filtering - modified upcoming for delegation
   const getTasksByView = (view) => {
     const viewFilteredTasks = filteredTasks.filter((task) => {
       // Skip completed tasks in all views
@@ -692,29 +683,22 @@ export default function AdminDashboard() {
 
       switch (view) {
         case "recent":
-          if (dashboardType === "delegation") {
-            // For DELEGATION: Show only today's tasks (pending only)
-            return isDateToday(task.taskStartDate);
-          } else {
-            // For CHECKLIST: Show tasks due today (pending only)
-            return isDateToday(task.taskStartDate);
-          }
+          // Show tasks due today (pending only)
+          return isDateToday(task.taskStartDate);
         case "upcoming":
           if (dashboardType === "delegation") {
-            // For DELEGATION: Show all future tasks (from tomorrow onwards, excluding today)
-            return isDateFuture(task.taskStartDate);
+            // For DELEGATION: Show all pending tasks from tomorrow onwards (exclude today)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            return taskStartDate >= tomorrow;
           } else {
             // For CHECKLIST: Show tasks due tomorrow only
             return isDateTomorrow(task.taskStartDate);
           }
         case "overdue":
-          if (dashboardType === "delegation") {
-            // For DELEGATION: Show all past date pending tasks (excluding today)
-            return isDateInPast(task.taskStartDate) && !isDateToday(task.taskStartDate);
-          } else {
-            // For CHECKLIST: Show tasks with start dates in the past (excluding today)
-            return isDateInPast(task.taskStartDate) && !isDateToday(task.taskStartDate);
-          }
+          // Show tasks with start dates in the past (excluding today)
+          return isDateInPast(task.taskStartDate) && !isDateToday(task.taskStartDate);
         default:
           return true;
       }
@@ -966,14 +950,14 @@ export default function AdminDashboard() {
                 }`}
               onClick={() => setTaskView("recent")}
             >
-              {dashboardType === "delegation" ? "Today Tasks" : "Recent Tasks"}
+              Recent Tasks
             </button>
             <button
               className={`py-3 text-center font-medium transition-colors ${taskView === "upcoming" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               onClick={() => setTaskView("upcoming")}
             >
-              {dashboardType === "delegation" ? "Future Tasks" : "Upcoming Tasks"}
+              Upcoming Tasks
             </button>
             <button
               className={`py-3 text-center font-medium transition-colors ${taskView === "overdue" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -1273,6 +1257,22 @@ export default function AdminDashboard() {
                           <div className="text-2xl font-bold text-red-600">{filteredDateStats.overdueTasks}</div>
                           <div className="text-xs text-red-600 mt-1">Past due dates only (excluding today)</div>
                         </div>
+                        <div className="bg-white p-3 rounded-lg border border-green-200">
+                          <div className="text-sm font-medium text-green-700">Completion Rate</div>
+                          <div className="text-2xl font-bold text-green-600">{filteredDateStats.completionRate}%</div>
+                          <div className="text-xs text-green-600 mt-1">
+                            {filteredDateStats.completedTasks} of {filteredDateStats.totalTasks} tasks completed
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* UPDATED: Special breakdown for delegation mode */}
+                  {dashboardType === "delegation" && (
+                    <div className="rounded-lg border border-purple-100 p-4 bg-gray-50">
+                      <h4 className="text-lg font-medium text-purple-700 mb-4">Delegation Completion Breakdown</h4>
+                      <div className="grid gap-4 md:grid-cols-3">
                         <div className="bg-white p-3 rounded-lg border border-green-200">
                           <div className="text-sm font-medium text-green-700">Completed Once</div>
                           <div className="text-2xl font-bold text-green-600">{departmentData.completedRatingOne}</div>

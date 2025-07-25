@@ -61,13 +61,13 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       active: location.pathname === "/dashboard/admin",
       showFor: ["admin", "user"] // Show for both roles
     },
-    // {
-    //   href: "/dashboard/quick-task",
-    //   label: "Quick Task",
-    //   icon: Zap,
-    //   active: location.pathname === "/dashboard/quick-task",
-    //   showFor: ["admin", "user"] // Only show for admin
-    // },
+    {
+      href: "/dashboard/quick-task",
+      label: "Quick Task",
+      icon: Zap,
+      active: location.pathname === "/dashboard/quick-task",
+      showFor: ["admin", "user"] // Only both
+    },
     {
       href: "/dashboard/assign-task",
       label: "Assign Task",

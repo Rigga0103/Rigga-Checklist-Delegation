@@ -27,7 +27,7 @@ export default function QuickTask() {
   const CONFIG = {
     SHEET_ID: "1pjNOV1ogLtiMm-Ow9_UVbsd3oN52jA5FdLGLgKwqlcw",
     WHATSAPP_SHEET: "Whatsapp", // For login credentials and user roles
-    CHECKLIST_SHEET: "Checklist", // For unique checklist tasks
+    CHECKLIST_SHEET: "Unique", // For unique checklist tasks
     DELEGATION_SHEET: "Delegation", // For delegation tasks
     PAGE_CONFIG: {
       title: "Task Management",
@@ -439,7 +439,7 @@ export default function QuickTask() {
                 className={`px-4 py-2 text-sm font-medium ${activeTab === 'checklist' ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 hover:bg-purple-50'}`}
                 onClick={() => setActiveTab('checklist')}
               >
-                Checklist
+                Unique Task
               </button>
               <button
                 className={`px-4 py-2 text-sm font-medium ${activeTab === 'delegation' ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 hover:bg-purple-50'}`}
@@ -581,7 +581,7 @@ export default function QuickTask() {
                         <td colSpan={8} className="px-6 py-8 text-center">
                           <div className="flex flex-col items-center justify-center">
                             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mb-2"></div>
-                            <p className="text-purple-600">Loading checklist data...</p>
+                            <p className="text-purple-600">Loading Unique task...</p>
                           </div>
                         </td>
                       </tr>

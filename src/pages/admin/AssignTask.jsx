@@ -836,7 +836,7 @@ export default function AssignTask() {
       );
 
       // Show a success message with the appropriate sheet name
-      alert(`Successfully submitted ${generatedTasks.length} tasks to Checklist sheet in one batch!`);
+      alert(`Successfully submitted ${generatedTasks.length} tasks to Task List sheet in one batch!`);
 
       // Reset form
       setFormData({
@@ -919,7 +919,7 @@ export default function AssignTask() {
                 </select>
                 {formData.department && (
                   <p className="text-xs text-purple-600">
-                    Tasks will be stored in Checklist sheet
+                    Tasks will be stored in Task List sheet
                   </p>
                 )}
               </div>
@@ -1166,7 +1166,7 @@ export default function AssignTask() {
                           {generatedTasks.length} Tasks Generated
                           {formData.frequency === "one-time"
                             ? " (Will be stored in DELEGATION sheet)"
-                            : ` (Will be stored in Checklist sheet)`
+                            : ` (Will be stored in Task List sheet)`
                           }
                         </span>
                         <svg
