@@ -177,6 +177,15 @@ export default function AdminDashboard() {
     return date.getTime() === tomorrow.getTime()
   }
 
+  // Function to check if a date is in the future (from tomorrow onwards)
+  const isDateFuture = (dateStr) => {
+    const date = parseDateFromDDMMYYYY(dateStr)
+    if (!date) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return date > today
+  }
+
   // Safe access to cell value
   const getCellValue = (row, index) => {
     if (!row || !row.c || index >= row.c.length) return null
@@ -185,6 +194,7 @@ export default function AdminDashboard() {
   }
 
   // Parse Google Sheets Date format into a proper date string
+  // Parse Google Sheets Date format into a proper date string
   const parseGoogleSheetsDate = (dateStr) => {
     if (!dateStr) return ''
 
@@ -192,8 +202,9 @@ export default function AdminDashboard() {
     console.log(`Parsing date: "${dateStr}" (type: ${typeof dateStr})`);
 
     if (typeof dateStr === 'string' && dateStr.startsWith('Date(')) {
-      // Handle Google Sheets Date(year,month,day) format
-      const match = /Date\((\d+),(\d+),(\d+)\)/.exec(dateStr)
+      // Updated regex to handle Google Sheets Date(year,month,day,hour,minute,second) format
+      // This will match both Date(year,month,day) and Date(year,month,day,hour,minute,second)
+      const match = /Date\((\d+),(\d+),(\d+)(?:,\d+,\d+,\d+)?\)/.exec(dateStr)
       if (match) {
         const year = parseInt(match[1], 10)
         const month = parseInt(match[2], 10) // 0-indexed in Google's format
@@ -671,7 +682,7 @@ export default function AdminDashboard() {
     return true;
   });
 
-  // Get tasks by view with date-based filtering - modified upcoming for delegation
+  // UPDATED: Get tasks by view with updated delegation logic
   const getTasksByView = (view) => {
     const viewFilteredTasks = filteredTasks.filter((task) => {
       // Skip completed tasks in all views
@@ -683,22 +694,29 @@ export default function AdminDashboard() {
 
       switch (view) {
         case "recent":
-          // Show tasks due today (pending only)
-          return isDateToday(task.taskStartDate);
+          if (dashboardType === "delegation") {
+            // For DELEGATION: Show only today's tasks (pending only)
+            return isDateToday(task.taskStartDate);
+          } else {
+            // For CHECKLIST: Show tasks due today (pending only)
+            return isDateToday(task.taskStartDate);
+          }
         case "upcoming":
           if (dashboardType === "delegation") {
-            // For DELEGATION: Show all pending tasks from tomorrow onwards (exclude today)
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
-            return taskStartDate >= tomorrow;
+            // For DELEGATION: Show all future tasks (from tomorrow onwards, excluding today)
+            return isDateFuture(task.taskStartDate);
           } else {
             // For CHECKLIST: Show tasks due tomorrow only
             return isDateTomorrow(task.taskStartDate);
           }
         case "overdue":
-          // Show tasks with start dates in the past (excluding today)
-          return isDateInPast(task.taskStartDate) && !isDateToday(task.taskStartDate);
+          if (dashboardType === "delegation") {
+            // For DELEGATION: Show all past date pending tasks (excluding today)
+            return isDateInPast(task.taskStartDate) && !isDateToday(task.taskStartDate);
+          } else {
+            // For CHECKLIST: Show tasks with start dates in the past (excluding today)
+            return isDateInPast(task.taskStartDate) && !isDateToday(task.taskStartDate);
+          }
         default:
           return true;
       }
@@ -777,6 +795,32 @@ export default function AdminDashboard() {
 
   // Staff Tasks Table Component
   const StaffTasksTable = () => {
+    // Get today's date for filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate staff tasks excluding upcoming tasks
+    const staffMembersWithCurrentTasks = departmentData.staffMembers.map(staff => {
+      // Filter tasks assigned to this staff member that are not upcoming (due today or before)
+      const staffTasks = departmentData.allTasks.filter(task => {
+        const taskDate = parseDateFromDDMMYYYY(task.taskStartDate);
+        return task.assignedTo === staff.name && taskDate && taskDate <= today;
+      });
+
+      const completedTasks = staffTasks.filter(task => task.status === 'completed').length;
+      const totalTasks = staffTasks.length;
+      const pendingTasks = totalTasks - completedTasks;
+      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+      return {
+        ...staff,
+        totalTasks,
+        completedTasks,
+        pendingTasks,
+        progress
+      };
+    });
+
     return (
       <div className="rounded-md border border-gray-200 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -803,7 +847,7 @@ export default function AdminDashboard() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {departmentData.staffMembers.map((staff) => (
+            {staffMembersWithCurrentTasks.map((staff) => (
               <tr key={staff.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
@@ -950,14 +994,14 @@ export default function AdminDashboard() {
                 }`}
               onClick={() => setTaskView("recent")}
             >
-              Recent Tasks
+              {dashboardType === "delegation" ? "Today Tasks" : "Recent Tasks"}
             </button>
             <button
               className={`py-3 text-center font-medium transition-colors ${taskView === "upcoming" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               onClick={() => setTaskView("upcoming")}
             >
-              Upcoming Tasks
+              {dashboardType === "delegation" ? "Future Tasks" : "Upcoming Tasks"}
             </button>
             <button
               className={`py-3 text-center font-medium transition-colors ${taskView === "overdue" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -1257,22 +1301,6 @@ export default function AdminDashboard() {
                           <div className="text-2xl font-bold text-red-600">{filteredDateStats.overdueTasks}</div>
                           <div className="text-xs text-red-600 mt-1">Past due dates only (excluding today)</div>
                         </div>
-                        <div className="bg-white p-3 rounded-lg border border-green-200">
-                          <div className="text-sm font-medium text-green-700">Completion Rate</div>
-                          <div className="text-2xl font-bold text-green-600">{filteredDateStats.completionRate}%</div>
-                          <div className="text-xs text-green-600 mt-1">
-                            {filteredDateStats.completedTasks} of {filteredDateStats.totalTasks} tasks completed
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* UPDATED: Special breakdown for delegation mode */}
-                  {dashboardType === "delegation" && (
-                    <div className="rounded-lg border border-purple-100 p-4 bg-gray-50">
-                      <h4 className="text-lg font-medium text-purple-700 mb-4">Delegation Completion Breakdown</h4>
-                      <div className="grid gap-4 md:grid-cols-3">
                         <div className="bg-white p-3 rounded-lg border border-green-200">
                           <div className="text-sm font-medium text-green-700">Completed Once</div>
                           <div className="text-2xl font-bold text-green-600">{departmentData.completedRatingOne}</div>
