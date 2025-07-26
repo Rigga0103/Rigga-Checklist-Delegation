@@ -21,6 +21,7 @@ const CONFIG = {
   },
 }
 
+
 function AccountDataPage() {
   const [accountData, setAccountData] = useState([])
   const [selectedItems, setSelectedItems] = useState(new Set())
@@ -48,6 +49,7 @@ function AccountDataPage() {
     itemCount: 0,
   })
 
+  const isAdmin = userRole === "admin";
   // UPDATED: Format date-time to DD/MM/YYYY HH:MM:SS
   const formatDateTimeToDDMMYYYY = (date) => {
     const day = date.getDate().toString().padStart(2, "0")
@@ -953,15 +955,21 @@ function AccountDataPage() {
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                         Task ID
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                        Department Name
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-                        Given By
-                      </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-                        Name
-                      </th>
+                      {isAdmin && (
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                          Department Name
+                        </th>
+                      )}
+                      {isAdmin && (
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                          Given By
+                        </th>
+                      )}
+                      {isAdmin && (
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                          Name
+                        </th>
+                      )}
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                         Task Description
                       </th>
@@ -971,9 +979,11 @@ function AccountDataPage() {
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
                         Freq
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                        Enable Reminders
-                      </th>
+                      {isAdmin && (
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                          Enable Reminders
+                        </th>
+                      )}
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                         Require Attachment
                       </th>
@@ -1045,15 +1055,21 @@ function AccountDataPage() {
                               {history["col1"] || "—"}
                             </div>
                           </td>
-                          <td className="px-3 py-4 min-w-[120px]">
-                            <div className="text-sm text-gray-900 break-words">{history["col2"] || "—"}</div>
-                          </td>
-                          <td className="px-3 py-4 min-w-[100px]">
-                            <div className="text-sm text-gray-900 break-words">{history["col3"] || "—"}</div>
-                          </td>
-                          <td className="px-3 py-4 min-w-[100px]">
-                            <div className="text-sm text-gray-900 break-words">{history["col4"] || "—"}</div>
-                          </td>
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[120px]">
+                              <div className="text-sm text-gray-900 break-words">{history["col2"] || "—"}</div>
+                            </td>
+                          )}
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[100px]">
+                              <div className="text-sm text-gray-900 break-words">{history["col3"] || "—"}</div>
+                            </td>
+                          )}
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[100px]">
+                              <div className="text-sm text-gray-900 break-words">{history["col4"] || "—"}</div>
+                            </td>
+                          )}
                           <td className="px-3 py-4 min-w-[200px]">
                             <div className="text-sm text-gray-900 break-words" title={history["col5"]}>
                               {history["col5"] || "—"}
@@ -1080,9 +1096,11 @@ function AccountDataPage() {
                           <td className="px-3 py-4 min-w-[80px]">
                             <div className="text-sm text-gray-900 break-words">{history["col7"] || "—"}</div>
                           </td>
-                          <td className="px-3 py-4 min-w-[120px]">
-                            <div className="text-sm text-gray-900 break-words">{history["col8"] || "—"}</div>
-                          </td>
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[120px]">
+                              <div className="text-sm text-gray-900 break-words">{history["col8"] || "—"}</div>
+                            </td>
+                          )}
                           <td className="px-3 py-4 min-w-[120px]">
                             <div className="text-sm text-gray-900 break-words">{history["col9"] || "—"}</div>
                           </td>
@@ -1168,7 +1186,7 @@ function AccountDataPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={userRole === "admin" ? 15 : 13} className="px-6 py-4 text-center text-gray-500">
+                        <td colSpan={isAdmin ? 15 : 11} className="px-6 py-4 text-center text-gray-500">
                           {searchTerm || selectedMembers.length > 0 || startDate || endDate
                             ? "No historical records matching your filters"
                             : "No completed records found"}
@@ -1196,15 +1214,21 @@ function AccountDataPage() {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                       Task ID
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                      Department Name
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-                      Given By
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-                      Name
-                    </th>
+                    {isAdmin && (
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                        Department Name
+                      </th>
+                    )}
+                    {isAdmin && (
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                        Given By
+                      </th>
+                    )}
+                    {isAdmin && (
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                        Name
+                      </th>
+                    )}
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                       Task Description
                     </th>
@@ -1214,9 +1238,12 @@ function AccountDataPage() {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
                       Freq
                     </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                      Enable Reminders
-                    </th>
+                    {/* Enable Reminders - only for admin */}
+                    {isAdmin && (
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                        Enable Reminders
+                      </th>
+                    )}
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                       Require Attachment
                     </th>
@@ -1248,15 +1275,21 @@ function AccountDataPage() {
                           <td className="px-3 py-4 min-w-[100px]">
                             <div className="text-sm text-gray-900 break-words">{account["col1"] || "—"}</div>
                           </td>
-                          <td className="px-3 py-4 min-w-[120px]">
-                            <div className="text-sm text-gray-900 break-words">{account["col2"] || "—"}</div>
-                          </td>
-                          <td className="px-3 py-4 min-w-[100px]">
-                            <div className="text-sm text-gray-900 break-words">{account["col3"] || "—"}</div>
-                          </td>
-                          <td className="px-3 py-4 min-w-[100px]">
-                            <div className="text-sm text-gray-900 break-words">{account["col4"] || "—"}</div>
-                          </td>
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[120px]">
+                              <div className="text-sm text-gray-900 break-words">{account["col2"] || "—"}</div>
+                            </td>
+                          )}
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[100px]">
+                              <div className="text-sm text-gray-900 break-words">{account["col3"] || "—"}</div>
+                            </td>
+                          )}
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[100px]">
+                              <div className="text-sm text-gray-900 break-words">{account["col4"] || "—"}</div>
+                            </td>
+                          )}
                           <td className="px-3 py-4 min-w-[200px]">
                             <div className="text-sm text-gray-900 break-words" title={account["col5"]}>
                               {account["col5"] || "—"}
@@ -1283,9 +1316,11 @@ function AccountDataPage() {
                           <td className="px-3 py-4 min-w-[80px]">
                             <div className="text-sm text-gray-900 break-words">{account["col7"] || "—"}</div>
                           </td>
-                          <td className="px-3 py-4 min-w-[120px]">
-                            <div className="text-sm text-gray-900 break-words">{account["col8"] || "—"}</div>
-                          </td>
+                          {isAdmin && (
+                            <td className="px-3 py-4 min-w-[120px]">
+                              <div className="text-sm text-gray-900 break-words">{account["col8"] || "—"}</div>
+                            </td>
+                          )}
                           <td className="px-3 py-4 min-w-[120px]">
                             <div className="text-sm text-gray-900 break-words">{account["col9"] || "—"}</div>
                           </td>
@@ -1376,7 +1411,7 @@ function AccountDataPage() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={13} className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan={isAdmin ? 13 : 9} className="px-6 py-4 text-center text-gray-500">
                         {searchTerm
                           ? "No tasks matching your search"
                           : "No pending tasks found for today, tomorrow, or past due dates"}
