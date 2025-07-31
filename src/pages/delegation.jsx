@@ -201,6 +201,7 @@ function DelegationDataPage() {
     setUsername(user || "")
   }, [])
 
+
   // NEW: Parse Google Sheets datetime with support for DD/MM/YYYY HH:MM:SS format
   const parseGoogleSheetsDateTime = useCallback(
     (dateTimeStr) => {
@@ -361,6 +362,31 @@ function DelegationDataPage() {
     if (parts.length !== 3) return null
     return new Date(parts[2], parts[1] - 1, parts[0])
   }, [])
+
+  const isToday = useCallback((dateStr) => {
+    if (!dateStr) return false;
+
+    try {
+      const today = new Date();
+      const todayFormatted = formatDateToDDMMYYYY(today);
+
+      // Check if dateStr is in DD/MM/YYYY format
+      if (dateStr.includes('/')) {
+        const datePart = dateStr.split(' ')[0]; // Get date part only
+        return datePart === todayFormatted;
+      }
+
+      // If not in expected format, try parsing
+      const parsedDate = parseDateFromDDMMYYYY(dateStr);
+      if (!parsedDate) return false;
+
+      return formatDateToDDMMYYYY(parsedDate) === todayFormatted;
+    } catch (error) {
+      console.error('Error checking if date is today:', error);
+      return false;
+    }
+  }, [formatDateToDDMMYYYY, parseDateFromDDMMYYYY]);
+
 
   const sortDateWise = useCallback(
     (a, b) => {
@@ -1342,8 +1368,25 @@ function DelegationDataPage() {
                       return (
                         <tr
                           key={account._id}
-                          className={`${isSelected ? "bg-purple-50" : ""} hover:bg-gray-50 ${rowColorClass}`}
-                        >
+                          className={`${isSelected ? "bg-purple-50" : ""} 
+                                    hover:bg-gray-50 
+                                    ${rowColorClass}
+                                    ${(isToday(account["col6"]) || isToday(account["col10"]))
+                              ? "bg-gradient-to-r from-amber-50 to-amber-100 border-l-4 border-r-4 border-amber-400 shadow-md"
+                              : ""
+                            }
+                                    relative
+                                  `}
+                          title={
+                            (isToday(account["col6"]) || isToday(account["col10"]))
+                              ? "⚠️ This task is due today!"
+                              : ""
+                          }
+                        >{(isToday(account["col6"]) || isToday(account["col10"])) && (
+                          <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-r-md shadow-lg">
+                            TODAY
+                          </div>
+                        )}
                           <td className="px-6 py-4 min-w-[50px]">
                             <input
                               type="checkbox"
