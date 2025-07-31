@@ -483,9 +483,9 @@ function AccountDataPage() {
         if (hasColumnG && isColumnKEmpty && isEmpty(columnPValue)) {
           const rowDate = parseDateFromDDMMYYYY(formattedRowDate)
           const isToday = formattedRowDate.startsWith(todayStr)
-          const isTomorrow = formattedRowDate.startsWith(tomorrowStr)
-          const isPastDate = rowDate && rowDate <= today
-          if (isToday || isTomorrow || isPastDate) {
+          // const isTomorrow = formattedRowDate.startsWith(tomorrowStr)
+          const isPastDate = rowDate && rowDate < today
+          if (isToday || isPastDate) {
             pendingAccounts.push(rowData)
           }
         }
