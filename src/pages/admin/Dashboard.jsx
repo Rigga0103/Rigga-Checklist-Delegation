@@ -87,13 +87,26 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Filter tasks within the date range
-    const filteredTasks = departmentData.allTasks.filter(task => {
+    let tasksToFilter = departmentData.allTasks;
+    if (filterStaff !== "all") {
+      tasksToFilter = tasksToFilter.filter(task => task.assignedTo === filterStaff);
+    }
+
+    // Then filter tasks within the date range from the already staff-filtered tasks
+    const filteredTasks = tasksToFilter.filter(task => {
       const taskStartDate = parseDateFromDDMMYYYY(task.taskStartDate);
       if (!taskStartDate) return false;
 
       return taskStartDate >= startDate && taskStartDate <= endDate;
     });
+
+    // Filter tasks within the date range
+    // const filteredTasks = departmentData.allTasks.filter(task => {
+    //   const taskStartDate = parseDateFromDDMMYYYY(task.taskStartDate);
+    //   if (!taskStartDate) return false;
+
+    //   return taskStartDate >= startDate && taskStartDate <= endDate;
+    // });
 
     // Count statistics
     let totalTasks = filteredTasks.length;
