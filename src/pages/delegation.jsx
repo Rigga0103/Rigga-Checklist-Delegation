@@ -1365,29 +1365,23 @@ function DelegationDataPage() {
                     filteredAccountData.map((account) => {
                       const isSelected = selectedItems.has(account._id)
                       const rowColorClass = getRowColor(account["col17"])
+                      const isTodayTask = isToday(account["col6"]) || isToday(account["col10"])
+
                       return (
                         <tr
                           key={account._id}
                           className={`${isSelected ? "bg-purple-50" : ""} 
-                                    hover:bg-gray-50 
-                                    ${rowColorClass}
-                                    ${(isToday(account["col6"]) || isToday(account["col10"]))
-                              ? "bg-gradient-to-r from-amber-50 to-amber-100 border-l-4 border-r-4 border-amber-400 shadow-md"
-                              : ""
-                            }
-                                    relative
-                                  `}
-                          title={
-                            (isToday(account["col6"]) || isToday(account["col10"]))
-                              ? "⚠️ This task is due today!"
-                              : ""
-                          }
-                        >{(isToday(account["col6"]) || isToday(account["col10"])) && (
-                          <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-r-md shadow-lg">
-                            TODAY
-                          </div>
-                        )}
-                          <td className="px-6 py-4 min-w-[50px]">
+                    hover:bg-gray-50 
+                    ${rowColorClass}
+                    ${isTodayTask ? "relative" : ""}
+                  `}
+                        >
+                          <td className="px-6 py-4 min-w-[50px] relative">
+                            {isTodayTask && (
+                              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-b-md shadow-md z-10 whitespace-nowrap">
+                                TODAY'S TASK
+                              </div>
+                            )}
                             <input
                               type="checkbox"
                               className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
