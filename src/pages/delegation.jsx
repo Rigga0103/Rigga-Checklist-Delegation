@@ -1379,7 +1379,7 @@ function DelegationDataPage() {
                           <td className="px-6 py-4 min-w-[50px] relative">
                             {isTodayTask && (
                               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-b-md shadow-md z-10 whitespace-nowrap">
-                                TODAY'S TASK
+                                TODAYgit 
                               </div>
                             )}
                             <input
