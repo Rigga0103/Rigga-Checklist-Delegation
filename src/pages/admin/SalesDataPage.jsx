@@ -880,7 +880,7 @@ function AccountDataPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        {/* <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <h1 className="text-2xl font-bold tracking-tight text-purple-700">
             {showHistory ? CONFIG.PAGE_CONFIG.historyTitle : CONFIG.PAGE_CONFIG.title}
           </h1>
@@ -924,7 +924,7 @@ function AccountDataPage() {
               </button>
             )}
 
-            {/* NEW: Admin Submit Button for History View */}
+            
             {showHistory && userRole === "admin" && selectedHistoryItems.length > 0 && (
               <div className="fixed top-40 right-10 z-50">
                 <button
@@ -937,7 +937,79 @@ function AccountDataPage() {
               </div>
             )}
           </div>
+        </div> */}
+
+
+<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <h1 className="text-2xl font-bold tracking-tight text-purple-700 text-center sm:text-left">
+    {showHistory ? CONFIG.PAGE_CONFIG.historyTitle : CONFIG.PAGE_CONFIG.title}
+  </h1>
+
+  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+    {/* Search box */}
+    <div className="relative w-full sm:w-64">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+      <input
+        type="text"
+        placeholder={showHistory ? "Search history..." : "Search tasks..."}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="pl-10 pr-4 py-2 border border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 w-full"
+      />
+    </div>
+
+    {/* Toggle history button */}
+    <button
+      onClick={toggleHistory}
+      className="rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 py-2 px-4 text-white hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto text-center"
+    >
+      {showHistory ? (
+        <div className="flex items-center justify-center sm:justify-start">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          <span>Back to Tasks</span>
         </div>
+      ) : (
+        <div className="flex items-center justify-center sm:justify-start">
+          <History className="h-4 w-4 mr-1" />
+          <span>View History</span>
+        </div>
+      )}
+    </button>
+
+    {/* Submit button (only when not history view) */}
+    {!showHistory && (
+      <button
+        onClick={handleSubmit}
+        disabled={!isSubmitEnabled || isSubmitting}
+        className={`rounded-md py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 w-full sm:w-auto ${
+          isSubmitEnabled && !isSubmitting
+            ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 cursor-pointer"
+            : "bg-gray-400 cursor-not-allowed opacity-50"
+        }`}
+      >
+        {isSubmitting ? "Processing..." : `Submit Selected (${selectedItemsCount})`}
+      </button>
+    )}
+
+    {/* Admin Submit Button for History View */}
+    {showHistory && userRole === "admin" && selectedHistoryItems.length > 0 && (
+      <div className="fixed bottom-6 right-6 sm:top-40 sm:right-10 z-50">
+        <button
+          onClick={handleMarkMultipleDone}
+          disabled={markingAsDone}
+          className="rounded-md bg-green-600 text-white px-4 py-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+        >
+          {markingAsDone
+            ? "Processing..."
+            : `Mark ${selectedHistoryItems.length} Items as Admin Done`}
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+
+
+
 
         {successMessage && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center justify-between">

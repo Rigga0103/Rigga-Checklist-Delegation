@@ -973,7 +973,7 @@ function DelegationDataPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        {/* <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <h1 className="text-2xl font-bold tracking-tight text-purple-700">
             {showHistory ? CONFIG.PAGE_CONFIG.historyTitle : CONFIG.PAGE_CONFIG.title}
           </h1>
@@ -990,7 +990,6 @@ function DelegationDataPage() {
               />
             </div>
 
-            {/* Admin-only filters */}
             {userRole === "admin" && !showHistory && (
               <>
                 <div className="relative">
@@ -1086,7 +1085,123 @@ function DelegationDataPage() {
               </button>
             )}
           </div>
+        </div> */}
+
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+  <h1 className="text-2xl font-bold tracking-tight text-purple-700">
+    {showHistory ? CONFIG.PAGE_CONFIG.historyTitle : CONFIG.PAGE_CONFIG.title}
+  </h1>
+
+  <div className="flex flex-wrap gap-3 sm:space-x-4">
+    <div className="relative w-full sm:w-auto">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+      <input
+        type="text"
+        placeholder={showHistory ? "Search by Task ID..." : "Search tasks..."}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full sm:w-64 pl-10 pr-4 py-2 border border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+      />
+    </div>
+
+    {/* Admin-only filters */}
+    {userRole === "admin" && !showHistory && (
+      <>
+        <div className="relative w-full sm:w-auto">
+          <button
+            onClick={() => toggleDropdown('name')}
+            className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto px-3 py-2 border border-purple-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <Filter className="h-4 w-4" />
+            {nameFilter || 'Filter by Name'}
+            <ChevronDown size={16} className={`transition-transform ${dropdownOpen.name ? 'rotate-180' : ''}`} />
+          </button>
+          {dropdownOpen.name && (
+            <div className="absolute z-50 mt-1 w-56 rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto">
+              <div className="py-1">
+                <button
+                  onClick={clearNameFilter}
+                  className={`block w-full text-left px-4 py-2 text-sm ${!nameFilter ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                >
+                  All Names
+                </button>
+                {allNames.map(name => (
+                  <button
+                    key={name}
+                    onClick={() => handleNameFilterSelect(name)}
+                    className={`block w-full text-left px-4 py-2 text-sm ${nameFilter === name ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        <div className="relative w-full sm:w-auto">
+          <button
+            onClick={() => toggleDropdown('department')}
+            className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto px-3 py-2 border border-purple-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <Filter className="h-4 w-4" />
+            {departmentFilter || 'Filter by Department'}
+            <ChevronDown size={16} className={`transition-transform ${dropdownOpen.department ? 'rotate-180' : ''}`} />
+          </button>
+          {dropdownOpen.department && (
+            <div className="absolute z-50 mt-1 w-56 rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto">
+              <div className="py-1">
+                <button
+                  onClick={clearDepartmentFilter}
+                  className={`block w-full text-left px-4 py-2 text-sm ${!departmentFilter ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                >
+                  All Departments
+                </button>
+                {allDepartments.map(dept => (
+                  <button
+                    key={dept}
+                    onClick={() => handleDepartmentFilterSelect(dept)}
+                    className={`block w-full text-left px-4 py-2 text-sm ${departmentFilter === dept ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                  >
+                    {dept}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </>
+    )}
+
+    <button
+      onClick={toggleHistory}
+      className="w-full sm:w-auto rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 py-2 px-4 text-white hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+    >
+      {showHistory ? (
+        <div className="flex items-center justify-center sm:justify-start">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          <span>Back to Tasks</span>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center sm:justify-start">
+          <History className="h-4 w-4 mr-1" />
+          <span>View History</span>
+        </div>
+      )}
+    </button>
+
+    {!showHistory && (
+      <button
+        onClick={handleSubmit}
+        disabled={selectedItemsCount === 0 || isSubmitting}
+        className="w-full sm:w-auto rounded-md bg-gradient-to-r from-purple-600 to-pink-600 py-2 px-4 text-white hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isSubmitting ? "Processing..." : `Submit Selected (${selectedItemsCount})`}
+      </button>
+    )}
+  </div>
+</div>
+
 
         {successMessage && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center justify-between">
