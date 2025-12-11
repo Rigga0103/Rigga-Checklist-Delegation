@@ -2479,30 +2479,38 @@ function AccountDataPage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex justify-between mt-10 gap-2">
                     {/* File Upload Button */}
-                    <label
-                      htmlFor={`upload-${account._id}`}
-                      className={`flex items-center cursor-pointer ${
-                        account["col9"]?.toUpperCase() === "YES" ? "text-red-600 font-medium" : "text-purple-600"
-                      } hover:text-purple-800`}
-                    >
-                      <Upload className="h-4 w-4 mr-1 flex-shrink-0" />
-                      <span className="text-xs break-words">
-                        {account["col9"]?.toUpperCase() === "YES" ? "Required Upload" : "Upload Receipt"}
-                        {account["col9"]?.toUpperCase() === "YES" && <span className="text-red-500 ml-1">*</span>}
-                      </span>
-                    </label>
+<label
+  htmlFor={`upload-${account._id}`}
+  className={`flex items-center cursor-pointer ${
+    account["col9"]?.toUpperCase() === "YES"
+      ? "text-red-600 font-medium"
+      : "text-purple-600"
+  } hover:text-purple-800`}
+>
+  <Upload className="h-4 w-4 mr-1 flex-shrink-0" />
+  <span className="text-xs break-words">
+    {account["col9"]?.toUpperCase() === "YES"
+      ? "Required Upload"
+      : "Upload Receipt"}
+    {account["col9"]?.toUpperCase() ===
+      "YES" && (
+      <span className="text-red-500 ml-1">
+        *
+      </span>
+    )}
+  </span>
+</label>
 
-                    <input
-                      id={`upload-${account._id}`}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={(e) => handleImageUpload(account._id, e)}
-                      disabled={!isSelected}
-                    />
+<input
+  id={`upload-${account._id}`}
+  type="file"
+  accept="image/*"
+  className="hidden"
+  onChange={(e) => handleImageUpload(account._id, e)}
+  disabled={!isSelected}
+/>
 
                     {/* Camera Capture Button */}
                     <button
