@@ -179,7 +179,7 @@ function startHeaderAnimation(name) {
     },
     {
       href: "/mentenance-calendar",
-      label: "Mentainence-Calendor",
+      label: "Mentainence-Calender",
       icon: PersonStanding,
       active: location.pathname === "/mentenance-calendar",
       showFor: ["admin", "user"],
