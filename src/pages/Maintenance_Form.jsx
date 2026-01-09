@@ -15,6 +15,9 @@ const Maintenance_Form = () => {
     photo: null,
     remarks: "",
     status: "",
+    vendorName: "",
+    billAmount: "",
+    billCopy: null,
   });
 
   const [dropdownData, setDropdownData] = useState({
@@ -35,6 +38,7 @@ const Maintenance_Form = () => {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [billCopyPreview, setBillCopyPreview] = useState(null);
 
   useEffect(() => {
     fetchMasterData();
@@ -131,6 +135,24 @@ const Maintenance_Form = () => {
     }
   };
 
+  const handleBillCopyChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, billCopy: file }));
+
+      // Create preview for images, show filename for other files
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setBillCopyPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setBillCopyPreview(null);
+      }
+    }
+  };
+
   const convertFileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -166,6 +188,11 @@ const Maintenance_Form = () => {
         photoBase64 = await convertFileToBase64(formData.photo);
       }
 
+      let billCopyBase64 = "";
+      if (formData.billCopy) {
+        billCopyBase64 = await convertFileToBase64(formData.billCopy);
+      }
+
       // Use this updated URL (your actual Apps Script URL)
       const response = await fetch(
         `https://script.google.com/macros/s/AKfycbzXzqnKmbeXw3i6kySQcBOwxHQA7y8WBFfEe69MPbCR-jux0Zte7-TeSKi8P4CIFkhE/exec`,
@@ -185,6 +212,9 @@ const Maintenance_Form = () => {
               photoBase64,
               formData.remarks,
               formData.status,
+              formData.billAmount,
+              billCopyBase64,
+              formData.vendorName,
             ]),
           }),
         }
@@ -209,6 +239,9 @@ const Maintenance_Form = () => {
           photo: null,
           remarks: "",
           status: "",
+          vendorName: "",
+          billAmount: "",
+          billCopy: null,
         });
         setCustomInputs({
           formFilledBy: false,
@@ -217,6 +250,7 @@ const Maintenance_Form = () => {
           status: false,
         });
         setPhotoPreview(null);
+        setBillCopyPreview(null);
       } else {
         setMessage({
           type: "error",
@@ -236,9 +270,9 @@ const Maintenance_Form = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 mx-auto mb-4 text-indigo-600 animate-spin" />
           <p className="text-gray-600">Loading form data...</p>
         </div>
       </div>
@@ -247,257 +281,325 @@ const Maintenance_Form = () => {
 
   return (
     <AdminLayout>
+      <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="max-w-3xl mx-auto">
+          <div className="p-8 bg-white shadow-xl rounded-2xl">
+            <h1 className="mb-2 text-3xl font-bold text-gray-800">
+              Repairing Request Form
+            </h1>
+            <p className="mb-8 text-gray-600">
+              Fill in the details below to submit a maintenance.
+            </p>
 
-    
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Maintenance Form
-          </h1>
-          <p className="text-gray-600 mb-8">
-            Fill in the details below to submit a maintenance.
-          </p>
-
-          {message.text && (
-            <div
-              className={`mb-6 p-4 rounded-lg ${
-                message.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
-              }`}
-            >
+            {message.text && (
+              <div
+                className={`mb-6 p-4 rounded-lg ${
+                  message.type === "success"
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
+                }`}
+              >
                 <p>{message.text}</p>
-                <h1><X/></h1>
-            </div>
-          )}
-
-          <div className="space-y-6">
-            {/* Form Filled By */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Form Filled By <span className="text-red-500">*</span>
-              </label>
-              {!customInputs.formFilledBy ? (
-                <select
-                  value={formData.formFilledBy}
-                  onChange={(e) =>
-                    handleDropdownChange("formFilledBy", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select person...</option>
-                  {dropdownData.formFilledByList.map((item, idx) => (
-                    <option key={idx} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={formData.formFilledBy}
-                  onChange={(e) =>
-                    handleInputChange("formFilledBy", e.target.value)
-                  }
-                  placeholder="Enter name..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                />
-              )}
-            </div>
-
-            {/* Machine Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Machine Name <span className="text-red-500">*</span>
-              </label>
-              {!customInputs.machineName ? (
-                <select
-                  value={formData.machineName}
-                  onChange={(e) =>
-                    handleDropdownChange("machineName", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select machine...</option>
-                  {dropdownData.machineNameList.map((item, idx) => (
-                    <option key={idx} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={formData.machineName}
-                  onChange={(e) =>
-                    handleInputChange("machineName", e.target.value)
-                  }
-                  placeholder="Enter machine name..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                />
-              )}
-            </div>
-
-            {/* Part Replaced */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Part Replaced <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.partReplaced}
-                onChange={(e) =>
-                  handleInputChange("partReplaced", e.target.value)
-                }
-                placeholder="Enter part name..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            {/* Work Done */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Work Done <span className="text-red-500">*</span>
-              </label>
-              {!customInputs.workDone ? (
-                <select
-                  value={formData.workDone}
-                  onChange={(e) =>
-                    handleDropdownChange("workDone", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select work done...</option>
-                  {dropdownData.workDoneList.map((item, idx) => (
-                    <option key={idx} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={formData.workDone}
-                  onChange={(e) =>
-                    handleInputChange("workDone", e.target.value)
-                  }
-                  placeholder="Enter work done..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                />
-              )}
-            </div>
-
-            {/* Photo Upload */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Photo of Work Done
-              </label>
-              <div className="mt-1 flex items-center gap-4">
-                <label className="flex-1 cursor-pointer">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">
-                      {formData.photo
-                        ? formData.photo.name
-                        : "Click to upload photo"}
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
+                <h1>
+                  <X />
+                </h1>
               </div>
-              {photoPreview && (
-                <div className="mt-4">
-                  <img
-                    src={photoPreview}
-                    alt="Preview"
-                    className="max-w-xs rounded-lg shadow-md"
+            )}
+
+            <div className="space-y-6">
+              {/* Form Filled By */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Form Filled By <span className="text-red-500">*</span>
+                </label>
+                {!customInputs.formFilledBy ? (
+                  <select
+                    value={formData.formFilledBy}
+                    onChange={(e) =>
+                      handleDropdownChange("formFilledBy", e.target.value)
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select person...</option>
+                    {dropdownData.formFilledByList.map((item, idx) => (
+                      <option key={idx} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.formFilledBy}
+                    onChange={(e) =>
+                      handleInputChange("formFilledBy", e.target.value)
+                    }
+                    placeholder="Enter name..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
                   />
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            {/* Remarks */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Remarks
-              </label>
-              <textarea
-                value={formData.remarks}
-                onChange={(e) => handleInputChange("remarks", e.target.value)}
-                placeholder="Enter any additional remarks..."
-                rows="4"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
+              {/* Machine Name */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Machine Name <span className="text-red-500">*</span>
+                </label>
+                {!customInputs.machineName ? (
+                  <select
+                    value={formData.machineName}
+                    onChange={(e) =>
+                      handleDropdownChange("machineName", e.target.value)
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select machine...</option>
+                    {dropdownData.machineNameList.map((item, idx) => (
+                      <option key={idx} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.machineName}
+                    onChange={(e) =>
+                      handleInputChange("machineName", e.target.value)
+                    }
+                    placeholder="Enter machine name..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                )}
+              </div>
 
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Status <span className="text-red-500">*</span>
-              </label>
-              {!customInputs.status ? (
-                <select
-                  value={formData.status}
-                  onChange={(e) =>
-                    handleDropdownChange("status", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select status...</option>
-                  {dropdownData.statusList.map((item, idx) => (
-                    <option key={idx} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              ) : (
+              {/* Part Replaced */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Part Replaced <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
-                  value={formData.status}
-                  onChange={(e) => handleInputChange("status", e.target.value)}
-                  placeholder="Enter status..."
+                  value={formData.partReplaced}
+                  onChange={(e) =>
+                    handleInputChange("partReplaced", e.target.value)
+                  }
+                  placeholder="Enter part name..."
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   required
                 />
-              )}
-            </div>
+              </div>
 
-            {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Send className="w-5 h-5" />
-                  Submit Form
-                </>
-              )}
-            </button>
+              {/* Work Done */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Work Done <span className="text-red-500">*</span>
+                </label>
+                {!customInputs.workDone ? (
+                  <select
+                    value={formData.workDone}
+                    onChange={(e) =>
+                      handleDropdownChange("workDone", e.target.value)
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select work done...</option>
+                    {dropdownData.workDoneList.map((item, idx) => (
+                      <option key={idx} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.workDone}
+                    onChange={(e) =>
+                      handleInputChange("workDone", e.target.value)
+                    }
+                    placeholder="Enter work done..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                )}
+              </div>
+
+              {/* Photo Upload */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Photo of Work Done
+                </label>
+                <div className="flex items-center gap-4 mt-1">
+                  <label className="flex-1 cursor-pointer">
+                    <div className="p-6 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-indigo-500">
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-600">
+                        {formData.photo
+                          ? formData.photo.name
+                          : "Click to upload photo"}
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                {photoPreview && (
+                  <div className="mt-4">
+                    <img
+                      src={photoPreview}
+                      alt="Preview"
+                      className="max-w-xs rounded-lg shadow-md"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Remarks */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Remarks
+                </label>
+                <textarea
+                  value={formData.remarks}
+                  onChange={(e) => handleInputChange("remarks", e.target.value)}
+                  placeholder="Enter any additional remarks..."
+                  rows="4"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Status <span className="text-red-500">*</span>
+                </label>
+                {!customInputs.status ? (
+                  <select
+                    value={formData.status}
+                    onChange={(e) =>
+                      handleDropdownChange("status", e.target.value)
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select status...</option>
+                    {dropdownData.statusList.map((item, idx) => (
+                      <option key={idx} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.status}
+                    onChange={(e) =>
+                      handleInputChange("status", e.target.value)
+                    }
+                    placeholder="Enter status..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    required
+                  />
+                )}
+              </div>
+
+              {/* Vendor Name */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Vendor Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.vendorName}
+                  onChange={(e) =>
+                    handleInputChange("vendorName", e.target.value)
+                  }
+                  placeholder="Enter vendor name..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Bill Amount */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Bill Amount
+                </label>
+                <input
+                  type="number"
+                  value={formData.billAmount}
+                  onChange={(e) =>
+                    handleInputChange("billAmount", e.target.value)
+                  }
+                  placeholder="Enter bill amount..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Bill Copy Upload */}
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Bill Copy
+                </label>
+                <div className="flex items-center gap-4 mt-1">
+                  <label className="flex-1 cursor-pointer">
+                    <div className="p-6 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-indigo-500">
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-600">
+                        {formData.billCopy
+                          ? formData.billCopy.name
+                          : "Click to upload bill copy"}
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={handleBillCopyChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                {billCopyPreview && (
+                  <div className="mt-4">
+                    <img
+                      src={billCopyPreview}
+                      alt="Bill Copy Preview"
+                      className="max-w-xs rounded-lg shadow-md"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex items-center justify-center w-full gap-2 py-3 font-semibold text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    Submit Form
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </AdminLayout>
   );
 };

@@ -24,7 +24,8 @@ import {
   BookmarkCheck,
   MoreHorizontalIcon,
   PersonStanding,
-  FormInput
+  FormInput,
+  LayoutDashboard,
 } from "lucide-react";
 
 export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
@@ -36,62 +37,62 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
   const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState("");
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [headerAnimatedText, setHeaderAnimatedText] = useState("")
-  const [showAnimation, setShowAnimation] = useState(false)
-// Authentication check + user info + header animation
-useEffect(() => {
-  const storedUsername = sessionStorage.getItem("username")
-  const storedRole = sessionStorage.getItem("role")
+  const [headerAnimatedText, setHeaderAnimatedText] = useState("");
+  const [showAnimation, setShowAnimation] = useState(false);
+  // Authentication check + user info + header animation
+  useEffect(() => {
+    const storedUsername = sessionStorage.getItem("username");
+    const storedRole = sessionStorage.getItem("role");
 
-  if (!storedUsername) {
-    navigate("/login")
-    return
-  }
-
-  setUsername(storedUsername)
-  setUserRole(storedRole || "user")
-
-  // Show welcome text animation once on mount
-  const hasSeenAnimation = sessionStorage.getItem("hasSeenWelcomeAnimation")
-  if (!hasSeenAnimation) {
-    setShowAnimation(true)
-    sessionStorage.setItem("hasSeenWelcomeAnimation", "true")
-
-    let currentIndex = 0
-    const welcomeText = `Welcome, ${storedUsername}`
-
-    const typingInterval = setInterval(() => {
-      if (currentIndex <= welcomeText.length) {
-        setAnimatedText(welcomeText.slice(0, currentIndex))
-        currentIndex++
-      } else {
-        clearInterval(typingInterval)
-        setShowAnimation(false)
-        // Start header animation after typing animation finishes
-        startHeaderAnimation(storedUsername)
-      }
-    }, 80)
-
-    return () => clearInterval(typingInterval)
-  } else {
-    // Show header text immediately without animation
-    setHeaderAnimatedText(`Welcome, ${storedUsername}`)
-  }
-}, [navigate])
-
-// Header typing animation function
-function startHeaderAnimation(name) {
-  let currentIndex = 0
-  const headerText = `Welcome, ${name}`
-  const headerInterval = setInterval(() => {
-    if (currentIndex <= headerText.length) {
-      setHeaderAnimatedText(headerText.slice(0, currentIndex))
-      currentIndex++
-    } else {
-      clearInterval(headerInterval)
+    if (!storedUsername) {
+      navigate("/login");
+      return;
     }
-  }, 80)
-}
+
+    setUsername(storedUsername);
+    setUserRole(storedRole || "user");
+
+    // Show welcome text animation once on mount
+    const hasSeenAnimation = sessionStorage.getItem("hasSeenWelcomeAnimation");
+    if (!hasSeenAnimation) {
+      setShowAnimation(true);
+      sessionStorage.setItem("hasSeenWelcomeAnimation", "true");
+
+      let currentIndex = 0;
+      const welcomeText = `Welcome, ${storedUsername}`;
+
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= welcomeText.length) {
+          setAnimatedText(welcomeText.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setShowAnimation(false);
+          // Start header animation after typing animation finishes
+          startHeaderAnimation(storedUsername);
+        }
+      }, 80);
+
+      return () => clearInterval(typingInterval);
+    } else {
+      // Show header text immediately without animation
+      setHeaderAnimatedText(`Welcome, ${storedUsername}`);
+    }
+  }, [navigate]);
+
+  // Header typing animation function
+  function startHeaderAnimation(name) {
+    let currentIndex = 0;
+    const headerText = `Welcome, ${name}`;
+    const headerInterval = setInterval(() => {
+      if (currentIndex <= headerText.length) {
+        setHeaderAnimatedText(headerText.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(headerInterval);
+      }
+    }, 80);
+  }
 
   // Handle logout
   const handleLogout = () => {
@@ -185,12 +186,34 @@ function startHeaderAnimation(name) {
       showFor: ["admin", "user"],
     },
     {
-      href: "/maintenance-form",
-      label: "Maintenance-Form",
-      icon: FormInput,
-      active: location.pathname === "/maintenance-form",
+      href: "/repairing-dashboard",
+      label: "Repairing Dashboard",
+      icon: LayoutDashboard,
+      active: location.pathname === "/repairing-dashboard",
       showFor: ["admin"],
     },
+    {
+      href: "/maintenance-dashboard",
+      label: "Maintenance Dashboard",
+      icon: LayoutDashboard,
+      active: location.pathname === "/maintenance-dashboard",
+      showFor: ["admin"],
+    },
+    {
+      href: "/repairing-form",
+      label: "Repairing Request Form",
+      icon: FormInput,
+      active: location.pathname === "/repairing-form",
+      showFor: ["admin"],
+    },
+    {
+      href: "/repairing-history",
+      label: "Repairing History",
+      icon: ClipboardList,
+      active: location.pathname === "/repairing-history",
+      showFor: ["admin"],
+    },
+    
     {
       href: "/dashboard/license",
       label: "License",
@@ -248,14 +271,17 @@ function startHeaderAnimation(name) {
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
       {/* Sidebar for desktop */}
-      <aside className="hidden w-64 flex-shrink-0 border-r border-blue-200 bg-white md:flex md:flex-col">
-        <div className="flex h-14 items-center border-b border-blue-200 px-4 bg-gradient-to-r from-blue-100 to-purple-100">
-          <Link to="/dashboard/admin" className="flex items-center gap-2 font-semibold text-blue-700">
-            <ClipboardList className="h-5 w-5 text-blue-600" />
+      <aside className="flex-shrink-0 hidden w-64 bg-white border-r border-blue-200 md:flex md:flex-col">
+        <div className="flex items-center px-4 border-b border-blue-200 h-14 bg-gradient-to-r from-blue-100 to-purple-100">
+          <Link
+            to="/dashboard/admin"
+            className="flex items-center gap-2 font-semibold text-blue-700"
+          >
+            <ClipboardList className="w-5 h-5 text-blue-600" />
             <span>Checklist & Delegation</span>
           </Link>
         </div>
-        <nav className="flex-1 overflow-y-auto p-2">
+        <nav className="flex-1 p-2 overflow-y-auto">
           <ul className="space-y-1">
             {accessibleRoutes.map((route) => (
               <li key={route.label}>
@@ -271,24 +297,31 @@ function startHeaderAnimation(name) {
                     >
                       <div className="flex items-center gap-3">
                         <route.icon
-                          className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`}
+                          className={`h-4 w-4 ${
+                            route.active ? "text-blue-600" : ""
+                          }`}
                         />
                         {route.label}
                       </div>
                       {isDataSubmenuOpen ? (
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="w-4 h-4" />
                       ) : (
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="w-4 h-4" />
                       )}
                     </button>
                     {isDataSubmenuOpen && (
-                      <ul className="mt-1 ml-6 space-y-1 border-l border-blue-100 pl-2">
+                      <ul className="pl-2 mt-1 ml-6 space-y-1 border-l border-blue-100">
                         {accessibleDepartments.map((category) => (
                           <li key={category.id}>
                             <Link
-                              to={category.link || `/dashboard/data/${category.id}`}
+                              to={
+                                category.link ||
+                                `/dashboard/data/${category.id}`
+                              }
                               className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
-                                location.pathname === (category.link || `/dashboard/data/${category.id}`)
+                                location.pathname ===
+                                (category.link ||
+                                  `/dashboard/data/${category.id}`)
                                   ? "bg-blue-50 text-blue-700 font-medium"
                                   : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
                               }`}
@@ -311,7 +344,9 @@ function startHeaderAnimation(name) {
                     }`}
                   >
                     <route.icon
-                      className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`}
+                      className={`h-4 w-4 ${
+                        route.active ? "text-blue-600" : ""
+                      }`}
                     />
                     {route.label}
                   </Link>
@@ -320,10 +355,10 @@ function startHeaderAnimation(name) {
             ))}
           </ul>
         </nav>
-        <div className="border-t border-blue-200 p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div className="p-4 border-t border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500">
                 <span className="text-sm font-medium text-white">
                   {username ? username.charAt(0).toUpperCase() : "U"}
                 </span>
@@ -343,12 +378,12 @@ function startHeaderAnimation(name) {
               {toggleDarkMode && (
                 <button
                   onClick={toggleDarkMode}
-                  className="text-blue-700 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100"
+                  className="p-1 text-blue-700 rounded-full hover:text-blue-900 hover:bg-blue-100"
                 >
                   {darkMode ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
+                      className="w-4 h-4"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -363,7 +398,7 @@ function startHeaderAnimation(name) {
                   ) : (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
+                      className="w-4 h-4"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -383,9 +418,9 @@ function startHeaderAnimation(name) {
               )}
               <button
                 onClick={handleLogout}
-                className="text-blue-700 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100"
+                className="p-1 text-blue-700 rounded-full hover:text-blue-900 hover:bg-blue-100"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="w-4 h-4" />
                 <span className="sr-only">Log out</span>
               </button>
             </div>
@@ -396,9 +431,9 @@ function startHeaderAnimation(name) {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden absolute left-4 top-3 z-50 text-blue-700 p-2 rounded-md hover:bg-blue-100"
+        className="absolute z-50 p-2 text-blue-700 rounded-md md:hidden left-4 top-3 hover:bg-blue-100"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="w-5 h-5" />
         <span className="sr-only">Toggle menu</span>
       </button>
 
@@ -410,24 +445,26 @@ function startHeaderAnimation(name) {
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
           <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
-            <div className="flex h-14 items-center border-b border-blue-200 px-4 bg-gradient-to-r from-blue-100 to-purple-100">
+            <div className="flex items-center px-4 border-b border-blue-200 h-14 bg-gradient-to-r from-blue-100 to-purple-100">
               <Link
                 to="/dashboard/admin"
                 className="flex items-center gap-2 font-semibold text-blue-700"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <ClipboardList className="h-5 w-5 text-blue-600" />
+                <ClipboardList className="w-5 h-5 text-blue-600" />
                 <span>Checklist & Delegation</span>
               </Link>
             </div>
-            <nav className="flex-1 overflow-y-auto p-2 bg-white">
+            <nav className="flex-1 p-2 overflow-y-auto bg-white">
               <ul className="space-y-1">
                 {accessibleRoutes.map((route) => (
                   <li key={route.label}>
                     {route.submenu ? (
                       <div>
                         <button
-                          onClick={() => setIsDataSubmenuOpen(!isDataSubmenuOpen)}
+                          onClick={() =>
+                            setIsDataSubmenuOpen(!isDataSubmenuOpen)
+                          }
                           className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                             route.active
                               ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
@@ -436,24 +473,31 @@ function startHeaderAnimation(name) {
                         >
                           <div className="flex items-center gap-3">
                             <route.icon
-                              className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`}
+                              className={`h-4 w-4 ${
+                                route.active ? "text-blue-600" : ""
+                              }`}
                             />
                             {route.label}
                           </div>
                           {isDataSubmenuOpen ? (
-                            <ChevronDown className="h-4 w-4" />
+                            <ChevronDown className="w-4 h-4" />
                           ) : (
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="w-4 h-4" />
                           )}
                         </button>
                         {isDataSubmenuOpen && (
-                          <ul className="mt-1 ml-6 space-y-1 border-l border-blue-100 pl-2">
+                          <ul className="pl-2 mt-1 ml-6 space-y-1 border-l border-blue-100">
                             {accessibleDepartments.map((category) => (
                               <li key={category.id}>
                                 <Link
-                                  to={category.link || `/dashboard/data/${category.id}`}
+                                  to={
+                                    category.link ||
+                                    `/dashboard/data/${category.id}`
+                                  }
                                   className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
-                                    location.pathname === (category.link || `/dashboard/data/${category.id}`)
+                                    location.pathname ===
+                                    (category.link ||
+                                      `/dashboard/data/${category.id}`)
                                       ? "bg-blue-50 text-blue-700 font-medium"
                                       : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
                                   }`}
@@ -477,7 +521,9 @@ function startHeaderAnimation(name) {
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <route.icon
-                          className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`}
+                          className={`h-4 w-4 ${
+                            route.active ? "text-blue-600" : ""
+                          }`}
                         />
                         {route.label}
                       </Link>
@@ -486,17 +532,18 @@ function startHeaderAnimation(name) {
                 ))}
               </ul>
             </nav>
-            <div className="border-t border-blue-200 p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+            <div className="p-4 border-t border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500">
                     <span className="text-sm font-medium text-white">
                       {username ? username.charAt(0).toUpperCase() : "U"}
                     </span>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-blue-700">
-                      {username || "User"} {userRole === "admin" ? "(Admin)" : ""}
+                      {username || "User"}{" "}
+                      {userRole === "admin" ? "(Admin)" : ""}
                     </p>
                     <p className="text-xs text-blue-600">
                       {username
@@ -509,12 +556,12 @@ function startHeaderAnimation(name) {
                   {toggleDarkMode && (
                     <button
                       onClick={toggleDarkMode}
-                      className="text-blue-700 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100"
+                      className="p-1 text-blue-700 rounded-full hover:text-blue-900 hover:bg-blue-100"
                     >
                       {darkMode ? (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
+                          className="w-4 h-4"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -529,7 +576,7 @@ function startHeaderAnimation(name) {
                       ) : (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
+                          className="w-4 h-4"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -549,9 +596,9 @@ function startHeaderAnimation(name) {
                   )}
                   <button
                     onClick={handleLogout}
-                    className="text-blue-700 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100"
+                    className="p-1 text-blue-700 rounded-full hover:text-blue-900 hover:bg-blue-100"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="w-4 h-4" />
                     <span className="sr-only">Log out</span>
                   </button>
                 </div>
@@ -565,28 +612,30 @@ function startHeaderAnimation(name) {
       {isLicenseModalOpen && <LicenseModal />}
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-      <header className="flex h-16 items-center justify-between border-b-2 border-blue-200 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 px-4 md:px-6 shadow-md">
-  <div className="flex md:hidden w-8"></div>
-  <div className="flex flex-col gap-1">
-   
-    {headerAnimatedText && (
-      <div className="relative">
-        <p className="text-lg md:text-xl font-['Poppins',_'Segoe_UI',_sans-serif] tracking-wide">
-          <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient">
-            {headerAnimatedText}
-          </span>
-          <span className="inline-block animate-bounce ml-2 text-yellow-500">👋</span>
-        </p>
-      </div>
-    )}
-  </div>
-</header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-br from-blue-50 to-purple-50 pb-20">
-          {children}</main>
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <header className="flex items-center justify-between h-16 px-4 border-b-2 border-blue-200 shadow-md bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 md:px-6">
+          <div className="flex w-8 md:hidden"></div>
+          <div className="flex flex-col gap-1">
+            {headerAnimatedText && (
+              <div className="relative">
+                <p className="text-lg md:text-xl font-['Poppins',_'Segoe_UI',_sans-serif] tracking-wide">
+                  <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient">
+                    {headerAnimatedText}
+                  </span>
+                  <span className="inline-block ml-2 text-yellow-500 animate-bounce">
+                    👋
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+        </header>
+        <main className="flex-1 p-4 pb-20 overflow-y-auto md:p-6 bg-gradient-to-br from-blue-50 to-purple-50">
+          {children}
+        </main>
 
-      {/* Mobile Footer Tabs - Only visible on mobile */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-blue-200 shadow-lg z-50">
+        {/* Mobile Footer Tabs - Only visible on mobile */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-blue-200 shadow-lg md:hidden">
           {/* Navigation tabs */}
           <nav className="flex justify-around py-2">
             <Link
@@ -601,7 +650,7 @@ function startHeaderAnimation(name) {
               <Home className="w-6 h-6 mb-1" />
               <span className="text-xs">Home</span>
             </Link>
-            
+
             <Link
               to="/dashboard/data/sales"
               className={`flex flex-col items-center text-sm p-2 transition-colors ${
@@ -630,7 +679,7 @@ function startHeaderAnimation(name) {
                 <span className="text-xs">Assign</span>
               </Link>
             )}
-            
+
             <Link
               to="/dashboard/delegation"
               className={`flex flex-col items-center text-sm p-2 transition-colors ${
@@ -646,7 +695,7 @@ function startHeaderAnimation(name) {
           </nav>
 
           {/* Botivate footer */}
-          <div className="w-full border-t border-blue-200 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center text-xs py-1">
+          <div className="w-full py-1 text-xs text-center text-white border-t border-blue-200 bg-gradient-to-r from-blue-600 to-purple-600">
             <a
               href="https://www.botivate.in/"
               target="_blank"
@@ -658,7 +707,7 @@ function startHeaderAnimation(name) {
           </div>
         </div>
         {/* Desktop Botivate footer */}
-        <div className="fixed md:left-64 left-0 right-0 bottom-0 hidden md:block py-1 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center text-sm shadow-md z-10">
+        <div className="fixed bottom-0 left-0 right-0 z-10 hidden px-4 py-1 text-sm text-center text-white shadow-md md:left-64 md:block bg-gradient-to-r from-blue-600 to-purple-600">
           <a
             href="https://www.botivate.in/"
             target="_blank"

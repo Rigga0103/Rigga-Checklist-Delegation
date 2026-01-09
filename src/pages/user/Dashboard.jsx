@@ -13,17 +13,17 @@ const UserDashboard = () => {
         <h1 className="text-2xl font-bold tracking-tight text-green-700 dark:text-green-400">My Dashboard</h1>
         <Link
           to="/user/tasks"
-          className="btn btn-primary bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white"
+          className="text-white btn btn-primary bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
         >
           View All Tasks
         </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="card border-l-4 border-l-blue-500 shadow-md hover:shadow-lg transition-all">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-tr-lg p-4 border-b border-blue-200 dark:border-blue-800">
+        <div className="transition-all border-l-4 shadow-md card border-l-blue-500 hover:shadow-lg">
+          <div className="flex flex-row items-center justify-between p-4 pb-2 space-y-0 border-b border-blue-200 rounded-tr-lg bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 dark:border-blue-800">
             <h3 className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Tasks</h3>
-            <i className="fas fa-clipboard-list h-4 w-4 text-blue-500"></i>
+            <i className="w-4 h-4 text-blue-500 fas fa-clipboard-list"></i>
           </div>
           <div className="p-4">
             <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">24</div>
@@ -31,10 +31,10 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        <div className="card border-l-4 border-l-green-500 shadow-md hover:shadow-lg transition-all">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-tr-lg p-4 border-b border-green-200 dark:border-green-800">
+        <div className="transition-all border-l-4 shadow-md card border-l-green-500 hover:shadow-lg">
+          <div className="flex flex-row items-center justify-between p-4 pb-2 space-y-0 border-b border-green-200 rounded-tr-lg bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 dark:border-green-800">
             <h3 className="text-sm font-medium text-green-700 dark:text-green-300">Completed</h3>
-            <i className="fas fa-check-circle h-4 w-4 text-green-500"></i>
+            <i className="w-4 h-4 text-green-500 fas fa-check-circle"></i>
           </div>
           <div className="p-4">
             <div className="text-3xl font-bold text-green-700 dark:text-green-300">18</div>
@@ -42,10 +42,10 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        <div className="card border-l-4 border-l-amber-500 shadow-md hover:shadow-lg transition-all">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 rounded-tr-lg p-4 border-b border-amber-200 dark:border-amber-800">
+        <div className="transition-all border-l-4 shadow-md card border-l-amber-500 hover:shadow-lg">
+          <div className="flex flex-row items-center justify-between p-4 pb-2 space-y-0 border-b rounded-tr-lg bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800">
             <h3 className="text-sm font-medium text-amber-700 dark:text-amber-300">Pending</h3>
-            <i className="fas fa-clock h-4 w-4 text-amber-500"></i>
+            <i className="w-4 h-4 fas fa-clock text-amber-500"></i>
           </div>
           <div className="p-4">
             <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">5</div>
@@ -53,10 +53,10 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        <div className="card border-l-4 border-l-red-500 shadow-md hover:shadow-lg transition-all">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 rounded-tr-lg p-4 border-b border-red-200 dark:border-red-800">
+        <div className="transition-all border-l-4 shadow-md card border-l-red-500 hover:shadow-lg">
+          <div className="flex flex-row items-center justify-between p-4 pb-2 space-y-0 border-b border-red-200 rounded-tr-lg bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 dark:border-red-800">
             <h3 className="text-sm font-medium text-red-700 dark:text-red-300">Overdue</h3>
-            <i className="fas fa-exclamation-triangle h-4 w-4 text-red-500"></i>
+            <i className="w-4 h-4 text-red-500 fas fa-exclamation-triangle"></i>
           </div>
           <div className="p-4">
             <div className="text-3xl font-bold text-red-700 dark:text-red-300">1</div>
@@ -66,7 +66,7 @@ const UserDashboard = () => {
       </div>
 
       {/* Task Navigation Tabs */}
-      <div className="w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
+      <div className="w-full overflow-hidden border border-gray-200 rounded-lg dark:border-gray-800">
         <div className="grid grid-cols-3">
           <button
             className={`py-3 text-center font-medium transition-colors ${
@@ -149,7 +149,7 @@ const UserDashboard = () => {
         </div>
 
         {activeTab === "tasks" && (
-          <div className="card border-green-200 dark:border-green-800 shadow-md">
+          <div className="border-green-200 shadow-md card dark:border-green-800">
             <div className="card-header bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950">
               <h3 className="text-lg font-medium text-green-700 dark:text-green-300">Pending Tasks</h3>
               <p className="text-sm text-green-600 dark:text-green-400">Tasks that require your attention</p>
@@ -161,7 +161,7 @@ const UserDashboard = () => {
         )}
 
         {activeTab === "overview" && (
-          <div className="card border-green-200 dark:border-green-800 shadow-md">
+          <div className="border-green-200 shadow-md card dark:border-green-800">
             <div className="card-header bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950">
               <h3 className="text-lg font-medium text-green-700 dark:text-green-300">Task Completion</h3>
               <p className="text-sm text-green-600 dark:text-green-400">Your task completion over time</p>
@@ -220,7 +220,7 @@ const TasksList = ({ filter }) => {
   return (
     <div className="space-y-4">
       {filteredTasks.length === 0 ? (
-        <div className="text-center p-8 text-gray-500 dark:text-gray-400">
+        <div className="p-8 text-center text-gray-500 dark:text-gray-400">
           <p>No tasks found.</p>
         </div>
       ) : (
@@ -231,7 +231,7 @@ const TasksList = ({ filter }) => {
               task.completed ? "border-l-green-500" : "border-l-blue-500"
             } transition-all hover:shadow-md`}
           >
-            <div className="p-4 pb-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-b border-blue-200 dark:border-blue-800">
+            <div className="p-4 pb-2 border-b border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 dark:border-blue-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <input
