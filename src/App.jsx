@@ -28,6 +28,7 @@ import Maintenance_Form from "./pages/Maintenance_Form";
 import Repairing_History from "./pages/Repairing_History";
 import Repairing_Dashboard from "./pages/Repairing_Dashboard";
 import Maintenance_Dashboard from "./pages/Maintenance_Dashboard";
+import RepairingPending from "./pages/admin/RepairingPending";
 
 // Auth wrapper component to protect routes
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -156,6 +157,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Repairing_History />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/repairing-pending"
+          element={
+            <ProtectedRoute>
+              <RepairingPending />
             </ProtectedRoute>
           }
         />

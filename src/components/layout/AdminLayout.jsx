@@ -26,6 +26,7 @@ import {
   PersonStanding,
   FormInput,
   LayoutDashboard,
+  Wrench,
 } from "lucide-react";
 
 export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
@@ -207,6 +208,13 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       showFor: ["admin"],
     },
     {
+      href: "/repairing-pending",
+      label: "Repairing Pending",
+      icon: Wrench,
+      active: location.pathname === "/repairing-pending",
+      showFor: ["admin"],
+    },
+    {
       href: "/repairing-history",
       label: "Repairing History",
       icon: ClipboardList,
@@ -214,6 +222,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       showFor: ["admin"],
     },
     
+
     {
       href: "/dashboard/license",
       label: "License",

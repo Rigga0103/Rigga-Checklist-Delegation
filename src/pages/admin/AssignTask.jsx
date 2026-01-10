@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BellRing, FileCheck, Calendar, Clock } from "lucide-react";
 import AdminLayout from "../../components/layout/AdminLayout";
+import useMasterSheetStore from "../../stores/useMasterSheetStore";
 
 // Calendar Component (defined outside)
 const CalendarComponent = ({ date, onChange, onClose }) => {
@@ -37,7 +38,7 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className="h-8 w-8"></div>);
+      days.push(<div key={`empty-${i}`} className="w-8 h-8"></div>);
     }
 
     // Add cells for each day of the month
@@ -81,11 +82,11 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
 
   return (
     <div className="p-2 bg-white border border-gray-200 rounded-md shadow-md">
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex items-center justify-between mb-2">
         <button
           type="button"
           onClick={prevMonth}
-          className="p-1 hover:bg-gray-100 rounded-full"
+          className="p-1 rounded-full hover:bg-gray-100"
         >
           &lt;
         </button>
@@ -96,7 +97,7 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
         <button
           type="button"
           onClick={nextMonth}
-          className="p-1 hover:bg-gray-100 rounded-full"
+          className="p-1 rounded-full hover:bg-gray-100"
         >
           &gt;
         </button>
@@ -105,7 +106,7 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
           <div
             key={day}
-            className="h-8 w-8 flex items-center justify-center text-xs text-gray-500"
+            className="flex items-center justify-center w-8 h-8 text-xs text-gray-500"
           >
             {day}
           </div>
@@ -151,10 +152,13 @@ export default function AssignTask() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [accordionOpen, setAccordionOpen] = useState(false);
 
-  // Add new state variables for dropdown options
-  const [departmentOptions, setDepartmentOptions] = useState([]);
-  const [givenByOptions, setGivenByOptions] = useState([]);
-  const [doerOptions, setDoerOptions] = useState([]);
+  // Get master sheet options from Zustand store
+  const {
+    departmentOptions,
+    givenByOptions,
+    doerOptions,
+    fetchMasterSheetOptions,
+  } = useMasterSheetStore();
 
   const [selectedSection, setSelectedSection] = useState("checklist");
 
@@ -191,100 +195,6 @@ export default function AssignTask() {
 
   const handleSwitchChange = (name, e) => {
     setFormData((prev) => ({ ...prev, [name]: e.target.checked }));
-  };
-
-  // Function to fetch options from master sheet
-  const fetchMasterSheetOptions = async () => {
-    try {
-      const masterSheetId = "1pjNOV1ogLtiMm-Ow9_UVbsd3oN52jA5FdLGLgKwqlcw";
-      const masterSheetName = "master";
-
-      const url = `https://docs.google.com/spreadsheets/d/${masterSheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(
-        masterSheetName
-      )}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch master data: ${response.status}`);
-      }
-
-      const text = await response.text();
-      const jsonStart = text.indexOf("{");
-      const jsonEnd = text.lastIndexOf("}");
-      const jsonString = text.substring(jsonStart, jsonEnd + 1);
-      const data = JSON.parse(jsonString);
-
-      if (!data.table || !data.table.rows) {
-        // console.log("No master data found");
-        return;
-      }
-
-      // Extract options from columns A, B, and C
-      const departments = [];
-      const givenBy = [];
-      const doers = [];
-
-      // Process all rows starting from index 1 (skip header)
-      data.table.rows.slice(1).forEach((row) => {
-        // Column A - Departments
-        // if (row.c && row.c[0] && row.c[0].v) {
-        //   const value = selectedSection === "checklist" ? row.c[0].v.toString().trim() : row.c[7].v.toString().trim();
-        //   if (value !== "") {
-        //     departments.push(value);
-        //   }
-        // }
-
-        if (row.c) {
-          let value = "";
-
-          if (selectedSection === "checklist" && row.c[0] && row.c[0].v) {
-            value = row.c[0].v.toString().trim();
-          } else if (
-            selectedSection === "maintenance" &&
-            row.c[7] &&
-            row.c[7].v
-          ) {
-            value = row.c[7].v.toString().trim();
-          }
-
-          if (value !== "") {
-            departments.push(value);
-          }
-        }
-
-        // Column B - Given By
-        if (row.c && row.c[1] && row.c[1].v) {
-          const value = row.c[1].v.toString().trim();
-          if (value !== "") {
-            givenBy.push(value);
-          }
-        }
-        // Column C - Doers
-        if (row.c && row.c[3] && row.c[3].v) {
-          const value = row.c[3].v.toString().trim();
-          if (value !== "") {
-            doers.push(value);
-          }
-        }
-      });
-
-      // Remove duplicates and sort
-      setDepartmentOptions([...new Set(departments)].sort());
-      setGivenByOptions([...new Set(givenBy)].sort());
-      setDoerOptions([...new Set(doers)].sort());
-
-      // console.log("Master sheet options loaded successfully", {
-      //   departments: [...new Set(departments)],
-      //   givenBy: [...new Set(givenBy)],
-      //   doers: [...new Set(doers)],
-      // });
-    } catch (error) {
-      console.error("Error fetching master sheet options:", error);
-      // Set default options if fetch fails
-      setDepartmentOptions(["Department 1", "Department 2"]);
-      setGivenByOptions(["User 1", "User 2"]);
-      setDoerOptions(["Doer 1", "Doer 2"]);
-    }
   };
 
   // Update date display format
@@ -332,8 +242,8 @@ export default function AssignTask() {
   };
 
   useEffect(() => {
-    fetchMasterSheetOptions();
-  }, [selectedSection]);
+    fetchMasterSheetOptions(selectedSection);
+  }, [selectedSection, fetchMasterSheetOptions]);
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -728,7 +638,9 @@ export default function AssignTask() {
         submitSheetName = "DELEGATION";
       } else {
         submitSheetName =
-          selectedSection === "maintenance" ? "Unique_mentainence" : "Unique की कॉपी";
+          selectedSection === "maintenance"
+            ? "Unique_mentainence"
+            : "Unique की कॉपी";
       }
 
       // console.log(`Selected department: ${formData.department}`);
@@ -817,12 +729,12 @@ export default function AssignTask() {
   return (
     <AdminLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold tracking-tight mb-6 text-purple-500">
+        <h1 className="mb-6 text-2xl font-bold tracking-tight text-purple-500">
           Assign New Task
         </h1>
-        <div className="rounded-lg border border-purple-200 bg-white shadow-md overflow-hidden">
+        <div className="overflow-hidden bg-white border border-purple-200 rounded-lg shadow-md">
           <form onSubmit={handleSubmit}>
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b border-purple-100 flex justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+            <div className="flex items-center justify-between p-6 space-y-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 md:space-y-0 md:space-x-4">
               <div>
                 <h2 className="text-xl font-semibold text-purple-700">
                   Task Details
@@ -836,7 +748,7 @@ export default function AssignTask() {
                 <select
                   value={selectedSection}
                   onChange={(e) => setSelectedSection(e.target.value)}
-                  className="rounded-md border border-purple-300 bg-white p-2 text-purple-700 font-medium focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="p-2 font-medium text-purple-700 bg-white border border-purple-300 rounded-md focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 >
                   <option value="checklist">Checklist</option>
                   <option value="maintenance">Maintenance</option>
@@ -860,11 +772,13 @@ export default function AssignTask() {
                   value={formData.department}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-md border border-purple-200 p-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="w-full p-2 border border-purple-200 rounded-md focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 >
-                  <option value="">{selectedSection === "checklist"
-                    ? "Select Department"
-                    : "Select Machine"}</option>
+                  <option value="">
+                    {selectedSection === "checklist"
+                      ? "Select Department"
+                      : "Select Machine"}
+                  </option>
                   {departmentOptions.map((dept, index) => (
                     <option key={index} value={dept}>
                       {dept}
@@ -892,7 +806,7 @@ export default function AssignTask() {
                   value={formData.givenBy}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-md border border-purple-200 p-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="w-full p-2 border border-purple-200 rounded-md focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 >
                   <option value="">Select Given By</option>
                   {givenByOptions.map((person, index) => (
@@ -917,7 +831,7 @@ export default function AssignTask() {
                   value={formData.doer}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-md border border-purple-200 p-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="w-full p-2 border border-purple-200 rounded-md focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 >
                   <option value="">Select Doer</option>
                   {doerOptions.map((doer, index) => (
@@ -944,7 +858,7 @@ export default function AssignTask() {
                   placeholder="Enter task description"
                   rows={4}
                   required
-                  className="w-full rounded-md border border-purple-200 p-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="w-full p-2 border border-purple-200 rounded-md focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 />
               </div>
 
@@ -959,9 +873,9 @@ export default function AssignTask() {
                     <button
                       type="button"
                       onClick={() => setShowCalendar(!showCalendar)}
-                      className="w-full flex justify-start items-center rounded-md border border-purple-200 p-2 text-left focus:outline-none focus:ring-1 focus:ring-purple-500"
+                      className="flex items-center justify-start w-full p-2 text-left border border-purple-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
                     >
-                      <Calendar className="mr-2 h-4 w-4 text-purple-500" />
+                      <Calendar className="w-4 h-4 mr-2 text-purple-500" />
                       {date ? getFormattedDate(date) : "Select a date"}
                     </button>
                     {showCalendar && (
@@ -991,7 +905,7 @@ export default function AssignTask() {
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
                       required
-                      className="w-full rounded-md border border-purple-200 p-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 pl-8"
+                      className="w-full p-2 pl-8 border border-purple-200 rounded-md focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                     />
                     <Clock className="absolute left-2 top-2.5 h-4 w-4 text-purple-500" />
                   </div>
@@ -1010,7 +924,7 @@ export default function AssignTask() {
                     name="frequency"
                     value={formData.frequency}
                     onChange={handleChange}
-                    className="w-full rounded-md border border-purple-200 p-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    className="w-full p-2 border border-purple-200 rounded-md focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   >
                     {frequencies.map((freq) => (
                       <option key={freq.value} value={freq.value}>
@@ -1023,20 +937,20 @@ export default function AssignTask() {
 
               {/* NEW: DateTime Display */}
               {date && time && (
-                <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
+                <div className="p-3 border border-purple-200 rounded-md bg-purple-50">
                   <p className="text-sm text-purple-700">
                     <strong>Selected Date & Time:</strong>{" "}
                     {getFormattedDateTime()}
                   </p>
-                  <p className="text-xs text-purple-600 mt-1">
+                  <p className="mt-1 text-xs text-purple-600">
                     Will be stored as: {formatDateTimeForStorage(date, time)}
                   </p>
                 </div>
               )}
 
               {/* Additional Options */}
-              <div className="space-y-4 pt-2 border-t border-purple-100">
-                <h3 className="text-lg font-medium text-purple-700 pt-2">
+              <div className="pt-2 space-y-4 border-t border-purple-100">
+                <h3 className="pt-2 text-lg font-medium text-purple-700">
                   Additional Options
                 </h3>
 
@@ -1044,7 +958,7 @@ export default function AssignTask() {
                   <div className="space-y-0.5">
                     <label
                       htmlFor="enable-reminders"
-                      className="text-purple-700 font-medium"
+                      className="font-medium text-purple-700"
                     >
                       Enable Reminders
                     </label>
@@ -1053,7 +967,7 @@ export default function AssignTask() {
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <BellRing className="h-4 w-4 text-purple-500" />
+                    <BellRing className="w-4 h-4 text-purple-500" />
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -1073,7 +987,7 @@ export default function AssignTask() {
                   <div className="space-y-0.5">
                     <label
                       htmlFor="require-attachment"
-                      className="text-purple-700 font-medium"
+                      className="font-medium text-purple-700"
                     >
                       Require Attachment
                     </label>
@@ -1082,7 +996,7 @@ export default function AssignTask() {
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <FileCheck className="h-4 w-4 text-purple-500" />
+                    <FileCheck className="w-4 h-4 text-purple-500" />
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -1104,7 +1018,7 @@ export default function AssignTask() {
                 <button
                   type="button"
                   onClick={generateTasks}
-                  className="w-full rounded-md border border-purple-200 bg-purple-50 py-2 px-4 text-purple-700 hover:bg-purple-100 hover:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                  className="w-full px-4 py-2 text-purple-700 border border-purple-200 rounded-md bg-purple-50 hover:bg-purple-100 hover:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                 >
                   Preview Generated Tasks
                 </button>
@@ -1115,7 +1029,7 @@ export default function AssignTask() {
                       <button
                         type="button"
                         onClick={() => setAccordionOpen(!accordionOpen)}
-                        className="w-full flex justify-between items-center p-4 text-purple-700 hover:bg-purple-50 focus:outline-none"
+                        className="flex items-center justify-between w-full p-4 text-purple-700 hover:bg-purple-50 focus:outline-none"
                       >
                         <span className="font-medium">
                           {generatedTasks.length} Task
@@ -1143,11 +1057,11 @@ export default function AssignTask() {
 
                       {accordionOpen && (
                         <div className="p-4 border-t border-purple-200">
-                          <div className="max-h-60 overflow-y-auto space-y-2">
+                          <div className="space-y-2 overflow-y-auto max-h-60">
                             {generatedTasks.slice(0, 20).map((task, index) => (
                               <div
                                 key={index}
-                                className="text-sm p-2 border rounded-md border-purple-200 bg-purple-50"
+                                className="p-2 text-sm border border-purple-200 rounded-md bg-purple-50"
                               >
                                 <div className="font-medium text-purple-700">
                                   {task.description}
@@ -1156,16 +1070,16 @@ export default function AssignTask() {
                                   Due: {formatDateForDisplay(task.dueDate)} |
                                   Department: {task.department}
                                 </div>
-                                <div className="flex space-x-2 mt-1">
+                                <div className="flex mt-1 space-x-2">
                                   {task.enableReminders && (
                                     <span className="inline-flex items-center text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                                      <BellRing className="h-3 w-3 mr-1" />{" "}
+                                      <BellRing className="w-3 h-3 mr-1" />{" "}
                                       Reminders
                                     </span>
                                   )}
                                   {task.requireAttachment && (
                                     <span className="inline-flex items-center text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
-                                      <FileCheck className="h-3 w-3 mr-1" />{" "}
+                                      <FileCheck className="w-3 h-3 mr-1" />{" "}
                                       Attachment Required
                                     </span>
                                   )}
@@ -1173,7 +1087,7 @@ export default function AssignTask() {
                               </div>
                             ))}
                             {generatedTasks.length > 20 && (
-                              <div className="text-sm text-center text-purple-600 py-2">
+                              <div className="py-2 text-sm text-center text-purple-600">
                                 ...and {generatedTasks.length - 20} more tasks
                               </div>
                             )}
@@ -1186,7 +1100,7 @@ export default function AssignTask() {
               </div>
             </div>
 
-            <div className="flex justify-between bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-t border-purple-100">
+            <div className="flex justify-between p-6 border-t border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50">
               <button
                 type="button"
                 onClick={() => {
@@ -1207,14 +1121,14 @@ export default function AssignTask() {
                   setGeneratedTasks([]);
                   setAccordionOpen(false);
                 }}
-                className="rounded-md border border-purple-200 py-2 px-4 text-purple-700 hover:border-purple-300 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                className="px-4 py-2 text-purple-700 border border-purple-200 rounded-md hover:border-purple-300 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-md bg-gradient-to-r from-purple-600 to-pink-600 py-2 px-4 text-white hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-white rounded-md bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Assigning..." : "Assign Task"}
               </button>

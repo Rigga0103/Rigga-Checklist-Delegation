@@ -950,11 +950,11 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
   if (loading)
     return (
       <AdminLayout>
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 px-4">
+        <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
           <div className="relative">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div className="w-16 h-16 border-4 border-indigo-200 rounded-full sm:w-20 sm:h-20 border-t-indigo-600 animate-spin"></div>
           </div>
-          <p className="mt-6 text-lg sm:text-xl font-semibold text-gray-700 animate-pulse text-center">
+          <p className="mt-6 text-lg font-semibold text-center text-gray-700 sm:text-xl animate-pulse">
             Loading calendar data...
           </p>
         </div>
@@ -964,11 +964,11 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
   if (error)
     return (
       <AdminLayout>
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 p-4">
-          <div className="bg-white p-6 sm:p-10 rounded-3xl shadow-2xl max-w-md w-full border-2 border-red-100">
-            <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-red-500 to-pink-500 rounded-full shadow-lg">
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-red-50 via-pink-50 to-rose-50">
+          <div className="w-full max-w-md p-6 bg-white border-2 border-red-100 shadow-2xl sm:p-10 rounded-3xl">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full shadow-lg sm:w-20 sm:h-20 bg-gradient-to-br from-red-500 to-pink-500">
               <svg
-                className="w-8 h-8 sm:w-10 sm:h-10 text-white"
+                className="w-8 h-8 text-white sm:w-10 sm:h-10"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -981,12 +981,12 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
                 />
               </svg>
             </div>
-            <h3 className="mt-6 text-xl sm:text-2xl font-bold text-center text-gray-900">
+            <h3 className="mt-6 text-xl font-bold text-center text-gray-900 sm:text-2xl">
               {error}
             </h3>
             <button
               onClick={fetchData}
-              className="mt-6 w-full px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg font-semibold"
+              className="w-full px-6 py-3 mt-6 font-semibold text-white transition-all duration-200 shadow-md bg-gradient-to-r from-red-500 to-pink-500 rounded-xl hover:from-red-600 hover:to-pink-600 hover:shadow-lg"
             >
               Retry
             </button>
@@ -997,14 +997,14 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
 
   return (
     <AdminLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-100 py-4 sm:py-8 px-2 sm:px-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen px-2 py-4 bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-100 sm:py-8 sm:px-4">
+        <div className="mx-auto max-w-7xl">
           {/* Header Card */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-8 mb-4 sm:mb-8 border border-indigo-100">
-            <div className="flex flex-col gap-4 sm:gap-6 bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-md border border-purple-100">
+          <div className="p-4 mb-4 bg-white border border-indigo-100 shadow-xl rounded-2xl sm:rounded-3xl sm:p-8 sm:mb-8">
+            <div className="flex flex-col gap-4 p-4 border border-purple-100 shadow-md sm:gap-6 bg-white/80 backdrop-blur-sm sm:p-6 rounded-2xl">
               {/* Header Section */}
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-sm">
+                <div className="p-3 shadow-sm bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -1021,10 +1021,10 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <h1 className="text-2xl font-bold text-transparent sm:text-3xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text">
                     Task Calendar
                   </h1>
-                  {/* <p className="text-xs sm:text-sm text-gray-600 mt-1 font-medium">
+                  {/* <p className="mt-1 text-xs font-medium text-gray-600 sm:text-sm">
                     Unique Sheet •{" "}
                     {lastWorkingDate
                       ? `Showing tasks from Today to ${formatDateDisplay(
@@ -1033,19 +1033,19 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
                       : "Loading date range..."}
                     <br />
                     Role:{" "}
-                    <span className="text-purple-700 font-semibold">
+                    <span className="font-semibold text-purple-700">
                       {role}
                     </span>
                     {role !== "admin" && role !== "main admin" && ` (${uName})`}
                   </p> */}
                   {/* <div className="flex gap-4 mt-2 text-xs sm:text-sm">
-                    <span className="text-green-600 font-semibold">
+                    <span className="font-semibold text-green-600">
                       ✓ {stats.completed} Completed
                     </span>
-                    <span className="text-blue-600 font-semibold">
+                    <span className="font-semibold text-blue-600">
                       🔄 {stats.pending} Pending
                     </span>
-                    <span className="text-gray-700 font-semibold">
+                    <span className="font-semibold text-gray-700">
                       📋 {stats.total} Total
                     </span>
                   </div> */}
@@ -1054,7 +1054,7 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
 
               {/* Date Range Info */}
               {lastWorkingDate && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="p-3 border border-blue-200 rounded-lg bg-blue-50">
                   <div className="flex items-center gap-2">
                     <svg
                       className="w-5 h-5 text-blue-600"
@@ -1077,12 +1077,12 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
               )}
 
               {/* NEW: Actions with Name Filter */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center justify-start sm:justify-end">
+              <div className="flex flex-col items-stretch justify-start gap-2 sm:flex-row sm:gap-3 sm:items-center sm:justify-end">
                 {/* Name Filter Dropdown */}
                 <select
                   value={selectedNameFilter}
                   onChange={(e) => setSelectedNameFilter(e.target.value)}
-                  className="px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 bg-white border border-gray-300 rounded-lg shadow-sm sm:px-4 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="all">All Names</option>
                   {availableNames.map((name) => (
@@ -1094,7 +1094,7 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
 
                 <button
                   onClick={handleDownloadPDF}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-lg shadow hover:from-green-700 hover:to-teal-700 transition-all duration-200"
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white transition-all duration-200 rounded-lg shadow bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
                 >
                   <svg
                     className="w-4 h-4"
@@ -1116,7 +1116,7 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
                 <button
                   onClick={fetchData}
                   disabled={loading}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white transition-all duration-200 rounded-lg shadow bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg
                     className="w-4 h-4"
@@ -1138,7 +1138,7 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
           </div>
 
           {/* Calendar */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-2 sm:p-8 border border-indigo-100">
+          <div className="p-2 bg-white border border-indigo-100 shadow-xl rounded-2xl sm:rounded-3xl sm:p-8">
             <style>{`
               .fc-event {
                 background-color: transparent !important;
@@ -1188,7 +1188,7 @@ const CalendarUI = ({ userRole, userName, displayName }) => {
 
             <div
               ref={printRef}
-              className="bg-white rounded-lg shadow-lg overflow-hidden"
+              className="overflow-hidden bg-white rounded-lg shadow-lg"
             >
               <FullCalendar
                 key={calendarKey}
@@ -1432,25 +1432,25 @@ const TaskModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black bg-opacity-50 sm:p-4 backdrop-blur-sm">
       <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-4 sm:p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 truncate pr-2">
+        <div className="sticky top-0 p-4 bg-white border-b-2 border-gray-200 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="pr-2 text-xl font-bold text-gray-800 truncate sm:text-2xl">
               📅 Tasks - {event.date}
               {lastWorkingDate && (
-                <span className="text-sm font-normal text-gray-600 ml-2">
+                <span className="ml-2 text-sm font-normal text-gray-600">
                   (Range: Today - {formatDateDisplay(lastWorkingDate)})
                 </span>
               )}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+              className="flex-shrink-0 p-2 transition-colors rounded-lg hover:bg-gray-100"
             >
               <svg
-                className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600"
+                className="w-5 h-5 text-gray-600 sm:w-6 sm:h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1500,11 +1500,11 @@ const TaskModal = ({
           </div>
 
           {/* Search Filter */}
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              className="px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="name">By Name</option>
               <option value="taskId">By Task ID</option>
@@ -1516,12 +1516,12 @@ const TaskModal = ({
               }...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 px-3 py-2 text-xs text-gray-700 placeholder-gray-400 border border-gray-300 rounded-lg sm:px-4 sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="px-3 sm:px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors text-xs sm:text-sm font-medium text-gray-700"
+                className="px-3 py-2 text-xs font-medium text-gray-700 transition-colors bg-gray-200 rounded-lg sm:px-4 hover:bg-gray-300 sm:text-sm"
               >
                 Clear
               </button>
@@ -1530,12 +1530,12 @@ const TaskModal = ({
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1 bg-gray-50">
+        <div className="flex-1 p-4 space-y-3 overflow-y-auto sm:p-6 sm:space-y-4 bg-gray-50">
           {!hasTasks && (
-            <div className="text-center py-8 sm:py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-full mb-4">
+            <div className="py-8 text-center sm:py-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-4 bg-gray-200 rounded-full sm:w-20 sm:h-20">
                 <svg
-                  className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400"
+                  className="w-8 h-8 text-gray-400 sm:w-10 sm:h-10"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1548,7 +1548,7 @@ const TaskModal = ({
                   />
                 </svg>
               </div>
-              <p className="text-gray-600 text-base sm:text-lg font-medium">
+              <p className="text-base font-medium text-gray-600 sm:text-lg">
                 No tasks found for selected filters
               </p>
             </div>
@@ -1562,14 +1562,14 @@ const TaskModal = ({
             return (
               <div key={frequency} className="mb-4 sm:mb-6">
                 <div
-                  className="flex items-center gap-2 mb-3 pb-2 border-b-2"
+                  className="flex items-center gap-2 pb-2 mb-3 border-b-2"
                   style={{ borderColor: freqColors[frequency] }}
                 >
                   <div
-                    className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0"
+                    className="flex-shrink-0 w-3 h-3 rounded-full sm:w-4 sm:h-4"
                     style={{ backgroundColor: freqColors[frequency] }}
                   />
-                  <h4 className="text-base sm:text-lg font-bold text-gray-800 truncate">
+                  <h4 className="text-base font-bold text-gray-800 truncate sm:text-lg">
                     {freqLabels[frequency]} ({tasks.length})
                   </h4>
                 </div>
@@ -1577,20 +1577,20 @@ const TaskModal = ({
                   {tasks.map((t, i) => (
                     <div
                       key={`${frequency}-${t.taskId}-${i}`}
-                      className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border-l-4 shadow-sm hover:shadow-md transition-shadow"
+                      className="p-3 transition-shadow bg-white border-l-4 rounded-lg shadow-sm sm:rounded-xl sm:p-4 hover:shadow-md"
                       style={{ borderColor: freqColors[frequency] }}
                     >
                       <div className="flex items-start justify-between gap-2 sm:gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-gray-900 mb-2 text-sm sm:text-base break-words">
+                          <div className="mb-2 text-sm font-semibold text-gray-900 break-words sm:text-base">
                             {t.description || t.name || "Task"}
                           </div>
                           <div className="flex flex-wrap gap-1.5 sm:gap-2 text-xs">
-                            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md font-medium">
+                            <span className="px-2 py-1 font-medium text-gray-700 bg-gray-100 rounded-md">
                               ID: {t.taskId}
                             </span>
                             {t.time && (
-                              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md font-medium">
+                              <span className="px-2 py-1 font-medium text-blue-700 bg-blue-100 rounded-md">
                                 🕐 {t.time}
                               </span>
                             )}
@@ -1605,12 +1605,12 @@ const TaskModal = ({
                                 ? "✓ Completed"
                                 : "🔄 Pending"}
                             </span>
-                            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md font-medium truncate">
+                            <span className="px-2 py-1 font-medium text-gray-700 truncate bg-gray-100 rounded-md">
                               👤 {t.name || "N/A"}
                             </span>
                             {t.priority && t.priority !== "normal" && (
                               <span
-                                className="px-2 py-1 rounded-md font-semibold text-white"
+                                className="px-2 py-1 font-semibold text-white rounded-md"
                                 style={{
                                   backgroundColor:
                                     t.priority === "high"
@@ -1637,7 +1637,7 @@ const TaskModal = ({
                             </span>
                           </div>
                           {t.remarks && (
-                            <div className="mt-2 text-xs text-gray-600 italic bg-gray-50 px-2 py-1 rounded-md inline-block">
+                            <div className="inline-block px-2 py-1 mt-2 text-xs italic text-gray-600 rounded-md bg-gray-50">
                               💬 {t.remarks}
                             </div>
                           )}
@@ -1652,7 +1652,7 @@ const TaskModal = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-6 bg-white border-t border-gray-200">
+        <div className="p-4 bg-white border-t border-gray-200 sm:p-6">
           <button
             onClick={onClose}
             className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-all duration-200 shadow-md hover:shadow-lg font-semibold text-sm sm:text-base"
