@@ -206,6 +206,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: FormInput,
       active: location.pathname === "/repairing-form",
       showFor: ["admin"],
+      showForUsers: ["pratap kumar rout"],
     },
     {
       href: "/repairing-pending",
@@ -213,6 +214,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: Wrench,
       active: location.pathname === "/repairing-pending",
       showFor: ["admin"],
+      showForUsers: ["pratap kumar rout"],
     },
     {
       href: "/repairing-history",
@@ -220,8 +222,8 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: ClipboardList,
       active: location.pathname === "/repairing-history",
       showFor: ["admin"],
+      showForUsers: ["pratap kumar rout"],
     },
-    
 
     {
       href: "/dashboard/license",
@@ -239,10 +241,23 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
     },
   ];
 
-  // Filter routes based on user role
+  // Filter routes based on user role and specific username
   const getAccessibleRoutes = () => {
     const userRole = sessionStorage.getItem("role") || "user";
-    return routes.filter((route) => route.showFor.includes(userRole));
+    const username = sessionStorage.getItem("username") || "";
+    console.log(username, "uesrname");
+
+    return routes.filter((route) => {
+      // Check if role matches
+      const roleMatch = route.showFor.includes(userRole);
+
+      // Check if specific user matches (if showForUsers is defined)
+      const userMatch = route.showForUsers
+        ? route.showForUsers.includes(username)
+        : false;
+
+      return roleMatch || userMatch;
+    });
   };
 
   // Check if the current path is a data category page

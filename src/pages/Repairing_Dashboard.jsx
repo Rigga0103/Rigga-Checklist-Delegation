@@ -12,6 +12,8 @@ import {
   AlertCircle,
   Users,
   Calendar,
+  FileText,
+  Camera,
 } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import {
@@ -857,13 +859,19 @@ const Repairing_Dashboard = () => {
                     Issue
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                    Part Replaced
+                  </th>
+                  <th className="px-5 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
                     Assigned To
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                    Vendor
+                    Bill Amount
                   </th>
-                  <th className="px-5 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                    Cost
+                  <th className="px-5 py-4 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">
+                    Bill Copy
+                  </th>
+                  <th className="px-5 py-4 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">
+                    Work Done Photo
                   </th>
                   <th className="px-5 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
                     Status
@@ -887,19 +895,52 @@ const Repairing_Dashboard = () => {
                         {row.machineName || "—"}
                       </td>
                       <td
-                        className="px-5 py-4 text-sm text-gray-600 align-middle max-w-[220px] truncate"
+                        className="px-5 py-4 text-sm text-gray-600 align-middle max-w-[180px] truncate"
                         title={row.issueDetail}
                       >
                         {row.issueDetail || "—"}
                       </td>
+                      <td
+                        className="px-5 py-4 text-sm text-gray-700 align-middle max-w-[150px] truncate"
+                        title={row.partReplaced}
+                      >
+                        {row.partReplaced || "—"}
+                      </td>
                       <td className="px-5 py-4 text-sm text-gray-700 align-middle">
                         {row.assignedTo || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-600 align-middle">
-                        {row.vendorName || "—"}
-                      </td>
                       <td className="px-5 py-4 text-sm font-bold text-gray-900 align-middle">
                         {row.billAmount ? formatCurrency(row.billAmount) : "—"}
+                      </td>
+                      <td className="px-5 py-4 text-center align-middle">
+                        {row.billCopyUrl ? (
+                          <a
+                            href={row.billCopyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 transition-colors bg-green-100 rounded-md hover:bg-green-200"
+                          >
+                            <FileText size={14} />
+                            View
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-center align-middle">
+                        {row.photoUrl ? (
+                          <a
+                            href={row.photoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 transition-colors bg-blue-100 rounded-md hover:bg-blue-200"
+                          >
+                            <Camera size={14} />
+                            View
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-4 align-middle">
                         <span
@@ -915,7 +956,7 @@ const Repairing_Dashboard = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="8"
+                      colSpan="10"
                       className="px-5 py-16 text-center text-gray-400"
                     >
                       No repair records found
@@ -956,10 +997,29 @@ const Repairing_Dashboard = () => {
                   <p className="mb-2 text-sm text-gray-600 line-clamp-2">
                     {row.issueDetail || "No description"}
                   </p>
+                  {row.partReplaced && (
+                    <p className="mb-2 text-xs text-gray-600">
+                      <span className="font-medium text-gray-500">Part:</span>{" "}
+                      {row.partReplaced}
+                    </p>
+                  )}
                   <div className="flex items-center justify-between pt-2 text-sm border-t border-gray-200">
-                    <span className="text-gray-500">
-                      {row.assignedTo || "Unassigned"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">
+                        {row.assignedTo || "Unassigned"}
+                      </span>
+                      {row.billCopyUrl && (
+                        <a
+                          href={row.billCopyUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200"
+                        >
+                          <FileText size={10} />
+                          Bill
+                        </a>
+                      )}
+                    </div>
                     <span className="font-bold text-gray-900">
                       {formatCurrency(row.billAmount)}
                     </span>

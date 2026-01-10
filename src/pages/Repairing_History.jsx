@@ -633,10 +633,13 @@ const Repairing_History = () => {
                       Work Details
                     </th>
                     <th className="px-4 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">
-                      Cost
+                      Bill Amount
                     </th>
                     <th className="px-4 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase whitespace-nowrap">
-                      Files
+                      Bill Copy
+                    </th>
+                    <th className="px-4 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase whitespace-nowrap">
+                      Work Done Photo
                     </th>
                   </tr>
                 </thead>
@@ -722,30 +725,36 @@ const Repairing_History = () => {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-center align-top whitespace-nowrap">
-                        <div className="flex justify-center gap-2">
-                          {item.photoUrl && (
-                            <a
-                              href={item.photoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 text-blue-600 rounded bg-blue-50 hover:bg-blue-100"
-                              title="View Work Photo"
-                            >
-                              <Eye size={16} />
-                            </a>
-                          )}
-                          {item.billCopyUrl && (
-                            <a
-                              href={item.billCopyUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 text-green-600 rounded bg-green-50 hover:bg-green-100"
-                              title="View Bill"
-                            >
-                              <FileText size={16} />
-                            </a>
-                          )}
-                        </div>
+                        {item.billCopyUrl ? (
+                          <a
+                            href={item.billCopyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200"
+                            title="View Bill"
+                          >
+                            <FileText size={14} />
+                            View
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-center align-top whitespace-nowrap">
+                        {item.photoUrl ? (
+                          <a
+                            href={item.photoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded hover:bg-blue-200"
+                            title="View Photo"
+                          >
+                            <Eye size={14} />
+                            View
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}

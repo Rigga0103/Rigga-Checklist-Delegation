@@ -9,6 +9,8 @@ import {
   Loader2,
   TrendingUp,
   Users,
+  FileText,
+  Camera,
 } from "lucide-react";
 import {
   BarChart,
@@ -177,8 +179,10 @@ const RepairingDashboardInner = () => {
         const issueDetail = getVal(5);
         const partReplaced = getVal(6);
         const workDone = getVal(10);
+        const photoUrl = getVal(11);
         const status = getVal(12) || "";
         const vendorName = getVal(13);
+        const billCopyUrl = getVal(14);
         const billAmount = parseFloat(getVal(15)) || 0;
 
         // Skip if no meaningful data
@@ -228,8 +232,10 @@ const RepairingDashboardInner = () => {
           issueDetail,
           partReplaced,
           workDone,
+          photoUrl,
           status,
           vendorName,
+          billCopyUrl,
           billAmount,
         });
       });
@@ -357,14 +363,14 @@ const RepairingDashboardInner = () => {
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-48 py-2 pl-9 pr-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-48 py-2 pr-3 text-sm border border-gray-200 rounded-lg pl-9 focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className="p-4 bg-white border-l-4 border-l-blue-500 rounded-lg shadow-md">
+        <div className="p-4 bg-white border-l-4 rounded-lg shadow-md border-l-blue-500">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-full">
               <Wrench className="w-5 h-5 text-blue-600" />
@@ -378,7 +384,7 @@ const RepairingDashboardInner = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white border-l-4 border-l-purple-500 rounded-lg shadow-md">
+        <div className="p-4 bg-white border-l-4 rounded-lg shadow-md border-l-purple-500">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-full">
               <IndianRupee className="w-5 h-5 text-purple-600" />
@@ -392,7 +398,7 @@ const RepairingDashboardInner = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white border-l-4 border-l-green-500 rounded-lg shadow-md">
+        <div className="p-4 bg-white border-l-4 rounded-lg shadow-md border-l-green-500">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-full">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -406,7 +412,7 @@ const RepairingDashboardInner = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white border-l-4 border-l-amber-500 rounded-lg shadow-md">
+        <div className="p-4 bg-white border-l-4 rounded-lg shadow-md border-l-amber-500">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-amber-100">
               <Clock className="w-5 h-5 text-amber-600" />
@@ -530,13 +536,19 @@ const RepairingDashboardInner = () => {
                   Machine
                 </th>
                 <th className="px-4 py-2 text-xs font-medium text-left text-gray-500 uppercase">
-                  Issue
+                  Part Replaced
                 </th>
                 <th className="px-4 py-2 text-xs font-medium text-left text-gray-500 uppercase">
                   Assigned To
                 </th>
                 <th className="px-4 py-2 text-xs font-medium text-left text-gray-500 uppercase">
-                  Cost
+                  Bill Amount
+                </th>
+                <th className="px-4 py-2 text-xs font-medium text-center text-gray-500 uppercase">
+                  Bill Copy
+                </th>
+                <th className="px-4 py-2 text-xs font-medium text-center text-gray-500 uppercase">
+                  Work Done Photo
                 </th>
                 <th className="px-4 py-2 text-xs font-medium text-left text-gray-500 uppercase">
                   Status
@@ -556,16 +568,46 @@ const RepairingDashboardInner = () => {
                     {row.machineName}
                   </td>
                   <td
-                    className="px-4 py-2 text-gray-600 max-w-[150px] truncate"
-                    title={row.issueDetail}
+                    className="px-4 py-2 text-gray-600 max-w-[120px] truncate"
+                    title={row.partReplaced}
                   >
-                    {row.issueDetail || "—"}
+                    {row.partReplaced || "—"}
                   </td>
                   <td className="px-4 py-2 text-gray-600">
                     {row.assignedTo || "—"}
                   </td>
                   <td className="px-4 py-2 font-semibold text-gray-900">
                     {row.billAmount ? formatCurrency(row.billAmount) : "—"}
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    {row.billCopyUrl ? (
+                      <a
+                        href={row.billCopyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200"
+                      >
+                        <FileText size={12} />
+                        View
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    {row.photoUrl ? (
+                      <a
+                        href={row.photoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 rounded hover:bg-blue-200"
+                      >
+                        <Camera size={12} />
+                        View
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-2">
                     <span
@@ -581,7 +623,7 @@ const RepairingDashboardInner = () => {
               {filteredData.length === 0 && (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="9"
                     className="px-4 py-6 text-center text-gray-400"
                   >
                     No repair records found
@@ -590,8 +632,12 @@ const RepairingDashboardInner = () => {
               )}
             </tbody>
           </table>
+          {/* Bottom spacing */}
+          <div className="h-4 bg-white"></div>
         </div>
       </div>
+      {/* Extra bottom margin */}
+      <div className="h-6"></div>
     </div>
   );
 };
