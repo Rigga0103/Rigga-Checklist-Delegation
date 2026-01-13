@@ -463,13 +463,13 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
 
       {/* Mobile sidebar */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-[60] md:hidden">
           <div
-            className="fixed inset-0 bg-black/20"
+            className="fixed inset-0 bg-black/50"
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
-          <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
-            <div className="flex items-center px-4 border-b border-blue-200 h-14 bg-gradient-to-r from-blue-100 to-purple-100">
+          <div className="fixed inset-y-0 left-0 flex flex-col w-64 h-full max-h-screen bg-white shadow-lg">
+            <div className="flex items-center flex-shrink-0 px-4 border-b border-blue-200 h-14 bg-gradient-to-r from-blue-100 to-purple-100">
               <Link
                 to="/dashboard/admin"
                 className="flex items-center gap-2 font-semibold text-blue-700"
@@ -479,7 +479,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                 <span>Checklist & Delegation</span>
               </Link>
             </div>
-            <nav className="flex-1 p-2 overflow-y-auto bg-white">
+            <nav className="flex-1 min-h-0 p-2 overflow-y-auto bg-white">
               <ul className="space-y-1">
                 {accessibleRoutes.map((route) => (
                   <li key={route.label}>
@@ -556,7 +556,12 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                 ))}
               </ul>
             </nav>
-            <div className="p-4 border-t border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <div
+              className="flex-shrink-0 p-4 pb-6 border-t border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50"
+              style={{
+                paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+              }}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500">

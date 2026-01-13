@@ -275,11 +275,9 @@ const Maintenance_Form = () => {
                     required
                   >
                     <option value="">Select person to assign...</option>
-                    {toAssignPersonList.map((item, idx) => (
-                      <option key={idx} value={item}>
-                        {item}
-                      </option>
-                    ))}
+                  <option>
+                    Pratap Kumar Rout
+                  </option>
                   </select>
                 ) : (
                   <div className="flex gap-2">
