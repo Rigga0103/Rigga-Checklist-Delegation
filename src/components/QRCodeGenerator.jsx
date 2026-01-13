@@ -13,7 +13,7 @@ import { QrCode, X, Download, ExternalLink, Maximize2 } from "lucide-react";
  */
 const QRCodeGenerator = ({
   customUrl,
-  title = "Scan QR Code",
+  title = "",
   description = "Scan this QR code with your mobile device to open this page",
   size = 200,
   position = "top-right",
@@ -72,12 +72,9 @@ const QRCodeGenerator = ({
       {/* Floating QR Code Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed ${positionClasses[position]} z-40 flex items-center gap-2 px-4 py-3 text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 group`}
-        title="Generate QR Code for this page"
+        className={`fixed ${positionClasses[position]} z-40 md:flex items-center gap-2 px-4 py-3 text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 group hidden`}
       >
         <QrCode className="w-5 h-5" />
-        <span className="hidden font-medium sm:inline">QR Code</span>
-        <Maximize2 className="w-4 h-4 transition-opacity opacity-0 group-hover:opacity-100" />
       </button>
 
       {/* Modal Overlay */}
