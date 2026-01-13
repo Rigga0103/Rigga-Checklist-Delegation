@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Send, Loader2, X } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import useMaintenanceFormStore from "../stores/useMaintenanceFormStore";
+import QRCodeGenerator from "../components/QRCodeGenerator";
 
 const FORM_SHEET = "Maitenence_Form";
 
@@ -118,7 +119,7 @@ const Maintenance_Form = () => {
 
       const result = await response.json();
 
-      console.log(result,"resufl")
+      console.log(result, "resufl");
 
       if (result.success) {
         setMessage({
@@ -170,6 +171,14 @@ const Maintenance_Form = () => {
 
   return (
     <AdminLayout>
+      {/* QR Code Generator - Floating button in top-right corner */}
+      <QRCodeGenerator
+        title="Scan to Open Form"
+        description="Scan this QR code with your mobile device to open the Repairing Request Form"
+        position="top-right"
+        size={200}
+      />
+
       <div className="min-h-screen px-4 py-8 bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="max-w-2xl mx-auto">
           <div className="p-8 bg-white shadow-xl rounded-2xl">
