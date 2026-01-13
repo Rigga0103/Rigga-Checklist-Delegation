@@ -25,6 +25,7 @@ import TaskDetails from "./pages/Mentainence/TaskDetails";
 import Mentainence_History from "./pages/Mentainence/Mentainence_History";
 import Mentainence_Calender from "./pages/Mentainence/Mentainence_Calender";
 import Maintenance_Form from "./pages/Maintenance_Form";
+import PublicMaintenanceForm from "./pages/PublicMaintenanceForm";
 import Repairing_History from "./pages/Repairing_History";
 import Repairing_Dashboard from "./pages/Repairing_Dashboard";
 import Maintenance_Dashboard from "./pages/Maintenance_Dashboard";
@@ -57,6 +58,12 @@ function App() {
 
         {/* Login route */}
         <Route path="/login" element={<LoginPage />} />
+
+        {/* Public routes - No authentication required */}
+        <Route
+          path="/public/repairing-form"
+          element={<PublicMaintenanceForm />}
+        />
 
         {/* Dashboard redirect */}
         <Route
