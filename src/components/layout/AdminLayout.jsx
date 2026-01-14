@@ -217,12 +217,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: FormInput,
       active: location.pathname === "/repairing-form",
       showFor: ["admin"],
-      showForUsers: [
-        "pratap kumar rout",
-        "Rakesh Kumar Rout",
-        "Kamal Sharma 65-18",
-        "Santosh Das 52-18",
-      ],
+      showForUsers: ["pratap kumar rout"],
     },
     {
       href: "/repairing-pending",
@@ -230,7 +225,12 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: Clock,
       active: location.pathname === "/repairing-pending",
       showFor: ["admin"],
-      showForUsers: ["pratap kumar rout"],
+      showForUsers: [
+        "pratap kumar rout",
+        "Rakesh Kumar Rout",
+        "Kamal Sharma 65-18",
+        "Santosh Das 52-18",
+      ],
     },
     {
       href: "/repairing-history",
