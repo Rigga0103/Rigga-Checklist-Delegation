@@ -251,12 +251,16 @@ const Repairing_History = () => {
         }
       }
 
+      // Only show completed items
+      const isCompleted = item.status === "✅ Completed (कार्य पूर्ण)";
+
       return (
         matchesSearch &&
         matchesMachine &&
         matchesFilledBy &&
         matchesStatus &&
-        matchesDate
+        matchesDate &&
+        isCompleted
       );
     });
   }, [

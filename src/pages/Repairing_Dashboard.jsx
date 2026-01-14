@@ -544,207 +544,6 @@ const Repairing_Dashboard = () => {
           </div>
         </div>
 
-        {/* Stat Cards */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard
-            title="Total Repairs"
-            value={stats.totalRepairs.toLocaleString()}
-            icon={Wrench}
-            color="border-blue-500"
-            subtext="All time records"
-          />
-          <StatCard
-            title="Total Cost"
-            value={formatCurrency(stats.totalCost)}
-            icon={IndianRupee}
-            color="border-purple-500"
-            subtext={`Avg: ${formatCurrency(stats.avgCostPerRepair)}/repair`}
-          />
-          <StatCard
-            title="Completed"
-            value={stats.completedRepairs.toLocaleString()}
-            icon={CheckCircle2}
-            color="border-green-500"
-            subtext={`${(
-              (stats.completedRepairs / stats.totalRepairs) * 100 || 0
-            ).toFixed(1)}% completion`}
-          />
-          <StatCard
-            title="Pending"
-            value={stats.pendingRepairs.toLocaleString()}
-            icon={Clock}
-            color="border-amber-500"
-            subtext={`${stats.inProgressRepairs} in progress`}
-          />
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          {/* Bar Chart - Repairs by Machine */}
-          <div className="p-6 bg-white shadow-md rounded-xl">
-            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
-              <Wrench size={20} className="text-orange-500" />
-              Top 10 Machines by Repairs
-            </h3>
-            {machineChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={machineChartData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis type="number" fontSize={12} stroke="#888888" />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    fontSize={11}
-                    stroke="#888888"
-                    width={120}
-                  />
-                  <Tooltip
-                    formatter={(value, name, props) => [value, "Repairs"]}
-                    labelFormatter={(label) =>
-                      machineChartData.find((d) => d.name === label)
-                        ?.fullName || label
-                    }
-                  />
-                  <Bar dataKey="repairs" fill="#f97316" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-400">
-                No data available
-              </div>
-            )}
-          </div>
-
-          {/* Pie Chart - Status Distribution */}
-          <div className="p-6 bg-white shadow-md rounded-xl">
-            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
-              <TrendingUp size={20} className="text-green-500" />
-              Status Distribution
-            </h3>
-            {statusChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={statusChartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={90}
-                    paddingAngle={3}
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${(percent * 100).toFixed(0)}%`
-                    }
-                    labelLine={false}
-                  >
-                    {statusChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value, name, props) => [
-                      value,
-                      props.payload.fullName,
-                    ]}
-                  />
-                  <Legend
-                    formatter={(value) => (
-                      <span className="text-sm">{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-400">
-                No data available
-              </div>
-            )}
-          </div>
-
-          {/* Line Chart - Monthly Trend */}
-          <div className="p-6 bg-white shadow-md rounded-xl">
-            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
-              <Calendar size={20} className="text-blue-500" />
-              Monthly Repair Trend
-            </h3>
-            {monthlyTrendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="month" fontSize={12} stroke="#888888" />
-                  <YAxis yAxisId="left" fontSize={12} stroke="#888888" />
-                  <YAxis
-                    yAxisId="right"
-                    orientation="right"
-                    fontSize={12}
-                    stroke="#888888"
-                  />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="repairs"
-                    stroke="#f97316"
-                    strokeWidth={2}
-                    dot={{ fill: "#f97316" }}
-                    name="Repairs"
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="cost"
-                    stroke="#8b5cf6"
-                    strokeWidth={2}
-                    dot={{ fill: "#8b5cf6" }}
-                    name="Cost (₹K)"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-400">
-                No trend data available
-              </div>
-            )}
-          </div>
-
-          {/* Bar Chart - Tasks by Assignee */}
-          <div className="p-6 bg-white shadow-md rounded-xl">
-            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
-              <Users size={20} className="text-indigo-500" />
-              Tasks by Assignee
-            </h3>
-            {assignedToChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={assignedToChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    dataKey="name"
-                    fontSize={11}
-                    stroke="#888888"
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis fontSize={12} stroke="#888888" />
-                  <Tooltip
-                    formatter={(value) => [value, "Tasks"]}
-                    labelFormatter={(label) =>
-                      assignedToChartData.find((d) => d.name === label)
-                        ?.fullName || label
-                    }
-                  />
-                  <Bar dataKey="tasks" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-400">
-                No data available
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Filters */}
         <div className="p-4 bg-white shadow-md rounded-xl">
           <div className="flex flex-wrap items-end gap-4">
@@ -778,11 +577,7 @@ const Repairing_Dashboard = () => {
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="all">All Assignees</option>
-                {assignedToList.map((person) => (
-                  <option key={person} value={person}>
-                    {person}
-                  </option>
-                ))}
+                <option value="Pratap Kumar Rout">Pratap Kumar Rout</option>
               </select>
             </div>
 
@@ -828,7 +623,42 @@ const Repairing_Dashboard = () => {
           </div>
         </div>
 
-        {/* Data Table */}
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard
+            title="Total Repairs"
+            value={stats.totalRepairs.toLocaleString()}
+            icon={Wrench}
+            color="border-blue-500"
+            subtext="All time records"
+          />
+          <StatCard
+            title="Total Cost"
+            value={formatCurrency(stats.totalCost)}
+            icon={IndianRupee}
+            color="border-purple-500"
+            subtext={`Avg: ${formatCurrency(stats.avgCostPerRepair)}/repair`}
+          />
+          <StatCard
+            title="Completed"
+            value={stats.completedRepairs.toLocaleString()}
+            icon={CheckCircle2}
+            color="border-green-500"
+            subtext={`${(
+              (stats.completedRepairs / stats.totalRepairs) * 100 || 0
+            ).toFixed(1)}% completion`}
+          />
+          <StatCard
+            title="Pending"
+            value={stats.pendingRepairs.toLocaleString()}
+            icon={Clock}
+            color="border-amber-500"
+            subtext={`${stats.inProgressRepairs} in progress`}
+          />
+        </div>
+
+
+    {/* Data Table */}
         <div className="mb-6 overflow-hidden bg-white shadow-md rounded-xl">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
@@ -1033,6 +863,176 @@ const Repairing_Dashboard = () => {
             )}
           </div>
         </div>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          {/* Bar Chart - Repairs by Machine */}
+          <div className="p-6 bg-white shadow-md rounded-xl">
+            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
+              <Wrench size={20} className="text-orange-500" />
+              Top 10 Machines by Repairs
+            </h3>
+            {machineChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={machineChartData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis type="number" fontSize={12} stroke="#888888" />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    fontSize={11}
+                    stroke="#888888"
+                    width={120}
+                  />
+                  <Tooltip
+                    formatter={(value, name, props) => [value, "Repairs"]}
+                    labelFormatter={(label) =>
+                      machineChartData.find((d) => d.name === label)
+                        ?.fullName || label
+                    }
+                  />
+                  <Bar dataKey="repairs" fill="#f97316" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-400">
+                No data available
+              </div>
+            )}
+          </div>
+
+          {/* Pie Chart - Status Distribution */}
+          <div className="p-6 bg-white shadow-md rounded-xl">
+            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
+              <TrendingUp size={20} className="text-green-500" />
+              Status Distribution
+            </h3>
+            {statusChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={statusChartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={90}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={({ name, percent }) =>
+                      `${(percent * 100).toFixed(0)}%`
+                    }
+                    labelLine={false}
+                  >
+                    {statusChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name, props) => [
+                      value,
+                      props.payload.fullName,
+                    ]}
+                  />
+                  <Legend
+                    formatter={(value) => (
+                      <span className="text-sm">{value}</span>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-400">
+                No data available
+              </div>
+            )}
+          </div>
+
+          {/* Line Chart - Monthly Trend */}
+          <div className="p-6 bg-white shadow-md rounded-xl">
+            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
+              <Calendar size={20} className="text-blue-500" />
+              Monthly Repair Trend
+            </h3>
+            {monthlyTrendData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={monthlyTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" fontSize={12} stroke="#888888" />
+                  <YAxis yAxisId="left" fontSize={12} stroke="#888888" />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    fontSize={12}
+                    stroke="#888888"
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="repairs"
+                    stroke="#f97316"
+                    strokeWidth={2}
+                    dot={{ fill: "#f97316" }}
+                    name="Repairs"
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="cost"
+                    stroke="#8b5cf6"
+                    strokeWidth={2}
+                    dot={{ fill: "#8b5cf6" }}
+                    name="Cost (₹K)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-400">
+                No trend data available
+              </div>
+            )}
+          </div>
+
+          {/* Bar Chart - Tasks by Assignee */}
+          <div className="p-6 bg-white shadow-md rounded-xl">
+            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
+              <Users size={20} className="text-indigo-500" />
+              Tasks by Assignee
+            </h3>
+            {assignedToChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={assignedToChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="name"
+                    fontSize={11}
+                    stroke="#888888"
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis fontSize={12} stroke="#888888" />
+                  <Tooltip
+                    formatter={(value) => [value, "Tasks"]}
+                    labelFormatter={(label) =>
+                      assignedToChartData.find((d) => d.name === label)
+                        ?.fullName || label
+                    }
+                  />
+                  <Bar dataKey="tasks" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-400">
+                No data available
+              </div>
+            )}
+          </div>
+        </div>
+
+        
+
+    
       </div>
     </AdminLayout>
   );

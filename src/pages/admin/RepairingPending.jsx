@@ -458,6 +458,9 @@ function RepairingPending() {
   const filteredHistoryData = useMemo(() => {
     return historyData
       .filter((item) => {
+        // NEW: Exclude completed items
+        const isNotCompleted = item["col12"] !== "✅ Completed (कार्य पूर्ण)";
+
         const matchesSearch = searchTerm
           ? Object.values(item).some(
               (value) =>
@@ -487,7 +490,11 @@ function RepairingPending() {
             if (itemDate > endDateObj) matchesDateRange = false;
           }
         }
-        return matchesSearch && matchesMember && matchesDateRange;
+
+        // ADD isNotCompleted to the return condition
+        return (
+          matchesSearch && matchesMember && matchesDateRange && isNotCompleted
+        );
       })
       .sort((a, b) => {
         const dateStrA = a["col0"] || "";
@@ -499,7 +506,6 @@ function RepairingPending() {
         return dateB.getTime() - dateA.getTime();
       });
   }, [historyData, searchTerm, selectedMembers, startDate, endDate]);
-
   const getTaskStatistics = () => {
     const totalPending = historyData.length;
     const memberStats =
@@ -596,16 +602,11 @@ function RepairingPending() {
           assignedTo.toLowerCase() === currentUsername.toLowerCase();
         if (!isUserMatch && currentUserRole !== "admin") return;
 
-        const actualDate = rowValues[8];
         const status = rowValues[12];
 
         // Filter Logic:
-        // 1. If "Actual" (Column I) has a date, it means task is done -> HIDE IT
-        // 2. If "Status" is Completed or Cancelled -> HIDE IT
-        if (!isEmpty(actualDate)) {
-          return;
-        }
-
+        // Only hide if "Status" is Completed or Cancelled
+        // Show all other tasks regardless of whether they have an Actual date or not
         if (
           status &&
           (status.toString().trim().includes("Completed") ||
