@@ -687,7 +687,7 @@ function RepairingPending() {
     if (!editModalOpen || !editingItem) return null;
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div className="fixed inset-0 flex items-center justify-center p-4 bg-black bg-opacity-50 z-[100]">
         <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-xl">
           <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-white border-b">
             <h2 className="text-xl font-bold text-gray-800">
@@ -740,190 +740,216 @@ function RepairingPending() {
             </div>
 
             {/* Editable fields */}
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Part Replaced */}
-              <div>
-                <label className="block mb-2 text-sm font-semibold text-gray-700">
-                  Part Replaced
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.partReplaced}
-                  onChange={(e) =>
-                    handleEditInputChange("partReplaced", e.target.value)
-                  }
-                  placeholder="Enter part name..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Work Done */}
-              <div>
-                <label className="block mb-2 text-sm font-semibold text-gray-700">
-                  Work Done
-                </label>
-                <select
-                  value={editFormData.workDone}
-                  onChange={(e) =>
-                    handleEditInputChange("workDone", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="">Select work done...</option>
-                  {workDoneList
-                    .filter((item) => item !== "Other")
-                    .map((item, idx) => (
-                      <option key={idx} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="block mb-2 text-sm font-semibold text-gray-700">
-                  Status
-                </label>
-                <select
-                  value={editFormData.status}
-                  onChange={(e) =>
-                    handleEditInputChange("status", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="">Select status...</option>
-                  {statusList
-                    .filter((item) => item !== "Other")
-                    .map((item, idx) => (
-                      <option key={idx} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              {/* Vendor Name */}
-              <div>
-                <label className="block mb-2 text-sm font-semibold text-gray-700">
-                  Vendor Name
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.vendorName}
-                  onChange={(e) =>
-                    handleEditInputChange("vendorName", e.target.value)
-                  }
-                  placeholder="Enter vendor name..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Bill Amount */}
-              <div>
-                <label className="block mb-2 text-sm font-semibold text-gray-700">
-                  Bill Amount (₹)
-                </label>
-                <input
-                  type="number"
-                  value={editFormData.billAmount}
-                  onChange={(e) =>
-                    handleEditInputChange("billAmount", e.target.value)
-                  }
-                  placeholder="Enter bill amount..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Remarks */}
-            <div>
+            {/* Status - FIRST */}
+            <div className="p-4 border border-orange-200 rounded-lg bg-orange-50">
               <label className="block mb-2 text-sm font-semibold text-gray-700">
-                Remarks
+                Status <span className="text-red-500">*</span>
               </label>
-              <textarea
-                value={editFormData.remarks}
+              <select
+                value={editFormData.status}
                 onChange={(e) =>
-                  handleEditInputChange("remarks", e.target.value)
+                  handleEditInputChange("status", e.target.value)
                 }
-                placeholder="Enter any additional remarks..."
-                rows="3"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
+                className="w-full px-4 py-2 bg-white border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="">Select status...</option>
+                {statusList
+                  .filter((item) => item !== "Other")
+                  .map((item, idx) => (
+                    <option key={idx} value={item}>
+                      {item}
+                    </option>
+                  ))}
+              </select>
             </div>
 
-            {/* Photo of Work Done */}
-            <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-700">
-                Photo of Work Done
-              </label>
-              <div className="flex items-start gap-4">
-                <label className="flex-1 cursor-pointer">
-                  <div className="p-4 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-orange-500">
-                    <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-600">
-                      {editFormData.photo
-                        ? editFormData.photo.name
-                        : "Click to upload photo"}
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="hidden"
+            {/* Conditional fields based on status */}
+            {/* Cancel selected - show only Remarks */}
+            {editFormData.status &&
+              editFormData.status.toLowerCase().includes("cancel") && (
+                <div>
+                  <label className="block mb-2 text-sm font-semibold text-gray-700">
+                    Remarks <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={editFormData.remarks}
+                    onChange={(e) =>
+                      handleEditInputChange("remarks", e.target.value)
+                    }
+                    placeholder="Enter reason for cancellation..."
+                    rows="3"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
-                </label>
-                {photoPreview && (
-                  <div className="flex-shrink-0">
-                    <img
-                      src={photoPreview}
-                      alt="Preview"
-                      className="object-cover w-24 h-24 rounded-lg shadow-md"
+                </div>
+              )}
+
+            {/* Complete selected - show all fields */}
+            {editFormData.status &&
+              editFormData.status.toLowerCase().includes("complete") && (
+                <>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* Part Replaced */}
+                    <div>
+                      <label className="block mb-2 text-sm font-semibold text-gray-700">
+                        Part Replaced
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.partReplaced}
+                        onChange={(e) =>
+                          handleEditInputChange("partReplaced", e.target.value)
+                        }
+                        placeholder="Enter part name..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    {/* Work Done */}
+                    <div>
+                      <label className="block mb-2 text-sm font-semibold text-gray-700">
+                        Work Done
+                      </label>
+                      <select
+                        value={editFormData.workDone}
+                        onChange={(e) =>
+                          handleEditInputChange("workDone", e.target.value)
+                        }
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      >
+                        <option value="">Select work done...</option>
+                        {workDoneList
+                          .filter((item) => item !== "Other")
+                          .map((item, idx) => (
+                            <option key={idx} value={item}>
+                              {item}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    {/* Vendor Name */}
+                    <div>
+                      <label className="block mb-2 text-sm font-semibold text-gray-700">
+                        Vendor Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.vendorName}
+                        onChange={(e) =>
+                          handleEditInputChange("vendorName", e.target.value)
+                        }
+                        placeholder="Enter vendor name..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    {/* Bill Amount */}
+                    <div>
+                      <label className="block mb-2 text-sm font-semibold text-gray-700">
+                        Bill Amount (₹)
+                      </label>
+                      <input
+                        type="number"
+                        value={editFormData.billAmount}
+                        onChange={(e) =>
+                          handleEditInputChange("billAmount", e.target.value)
+                        }
+                        placeholder="Enter bill amount..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Remarks */}
+                  <div>
+                    <label className="block mb-2 text-sm font-semibold text-gray-700">
+                      Remarks
+                    </label>
+                    <textarea
+                      value={editFormData.remarks}
+                      onChange={(e) =>
+                        handleEditInputChange("remarks", e.target.value)
+                      }
+                      placeholder="Enter any additional remarks..."
+                      rows="3"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     />
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* Bill Copy */}
-            <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-700">
-                Bill Copy
-              </label>
-              <div className="flex items-start gap-4">
-                <label className="flex-1 cursor-pointer">
-                  <div className="p-4 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-orange-500">
-                    <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-600">
-                      {editFormData.billCopy
-                        ? editFormData.billCopy.name
-                        : "Click to upload bill copy"}
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={handleBillCopyChange}
-                    className="hidden"
-                  />
-                </label>
-                {billCopyPreview &&
-                  typeof billCopyPreview === "string" &&
-                  billCopyPreview.startsWith("http") && (
-                    <div className="flex-shrink-0">
-                      <a
-                        href={billCopyPreview}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View existing bill
-                      </a>
+                  {/* Photo of Work Done */}
+                  <div>
+                    <label className="block mb-2 text-sm font-semibold text-gray-700">
+                      Photo of Work Done
+                    </label>
+                    <div className="flex items-start gap-4">
+                      <label className="flex-1 cursor-pointer">
+                        <div className="p-4 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-orange-500">
+                          <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+                          <p className="text-sm text-gray-600">
+                            {editFormData.photo
+                              ? editFormData.photo.name
+                              : "Click to upload photo"}
+                          </p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoChange}
+                          className="hidden"
+                        />
+                      </label>
+                      {photoPreview && (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={photoPreview}
+                            alt="Preview"
+                            className="object-cover w-24 h-24 rounded-lg shadow-md"
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-              </div>
-            </div>
+                  </div>
+
+                  {/* Bill Copy */}
+                  <div>
+                    <label className="block mb-2 text-sm font-semibold text-gray-700">
+                      Bill Copy
+                    </label>
+                    <div className="flex items-start gap-4">
+                      <label className="flex-1 cursor-pointer">
+                        <div className="p-4 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-orange-500">
+                          <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+                          <p className="text-sm text-gray-600">
+                            {editFormData.billCopy
+                              ? editFormData.billCopy.name
+                              : "Click to upload bill copy"}
+                          </p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={handleBillCopyChange}
+                          className="hidden"
+                        />
+                      </label>
+                      {billCopyPreview &&
+                        typeof billCopyPreview === "string" &&
+                        billCopyPreview.startsWith("http") && (
+                          <div className="flex-shrink-0">
+                            <a
+                              href={billCopyPreview}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              View existing bill
+                            </a>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                </>
+              )}
           </div>
 
           {/* Modal Footer */}

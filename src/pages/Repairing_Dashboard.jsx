@@ -1,5 +1,12 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import useMaintenanceHistoryStore from "../stores/useMaintenanceHistoryStore";
 import {
   Wrench,
   IndianRupee,
@@ -60,7 +67,52 @@ const Repairing_Dashboard = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [assignedToList, setAssignedToList] = useState([]);
   const [selectedAssignedTo, setSelectedAssignedTo] = useState("all");
+  const [monthsList, setMonthsList] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState("all");
+  const [showMachineDropdown, setShowMachineDropdown] = useState(false);
+  const machineDropdownRef = useRef(null);
 
+  // Get admin done records from Zustand store
+  const historyData = useMaintenanceHistoryStore((state) => state.historyData);
+  const historyLoading = useMaintenanceHistoryStore((state) => state.isLoading);
+  const fetchMaintenanceHistory = useMaintenanceHistoryStore(
+    (state) => state.fetchMaintenanceHistory
+  );
+
+  const adminDoneRecords = useMemo(() => {
+    return historyData.filter((item) => {
+      const adminDone = item["col15"];
+      return (
+        adminDone !== null &&
+        adminDone !== undefined &&
+        adminDone.toString().trim() !== ""
+      );
+    });
+  }, [historyData]);
+
+  // Fetch maintenance history on mount if not already loaded
+  useEffect(() => {
+    if (historyData.length === 0 && !historyLoading) {
+      fetchMaintenanceHistory();
+    }
+  }, [historyData.length, historyLoading, fetchMaintenanceHistory]);
+
+  // Click away handler for machine dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        machineDropdownRef.current &&
+        !machineDropdownRef.current.contains(event.target)
+      ) {
+        setShowMachineDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   // Stats
   const [stats, setStats] = useState({
     totalRepairs: 0,
@@ -294,6 +346,17 @@ const Repairing_Dashboard = () => {
       setStatusList(Array.from(statusSet).sort());
       setAssignedToList(Array.from(assignedToSet).sort());
 
+      // Generate months list from data
+      const sortedMonths = Object.keys(monthlyData).sort().reverse();
+      const monthsListFormatted = sortedMonths.map((monthKey) => ({
+        value: monthKey,
+        label: new Date(monthKey + "-01").toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+      }));
+      setMonthsList(monthsListFormatted);
+
       // Set stats
       const avgCost = repairRows.length > 0 ? totalCost / repairRows.length : 0;
       setStats({
@@ -399,6 +462,20 @@ const Repairing_Dashboard = () => {
           ? item.assignedTo === selectedAssignedTo
           : true;
 
+      // Month filter
+      let matchesMonth = true;
+      if (selectedMonth !== "all") {
+        const itemDate = parseDateFromString(item.timestamp);
+        if (itemDate) {
+          const itemMonthKey = `${itemDate.getFullYear()}-${String(
+            itemDate.getMonth() + 1
+          ).padStart(2, "0")}`;
+          matchesMonth = itemMonthKey === selectedMonth;
+        } else {
+          matchesMonth = false;
+        }
+      }
+
       let matchesDateRange = true;
       if (startDate || endDate) {
         const itemDate = parseDateFromString(item.timestamp);
@@ -418,6 +495,7 @@ const Repairing_Dashboard = () => {
       return (
         matchesSearch &&
         matchesMachine &&
+        matchesMonth &&
         matchesStatus &&
         matchesAssignedTo &&
         matchesDateRange
@@ -429,6 +507,7 @@ const Repairing_Dashboard = () => {
     selectedMachines,
     selectedStatus,
     selectedAssignedTo,
+    selectedMonth,
     startDate,
     endDate,
   ]);
@@ -438,8 +517,10 @@ const Repairing_Dashboard = () => {
     setSelectedMachines([]);
     setSelectedStatus("all");
     setSelectedAssignedTo("all");
+    setSelectedMonth("all");
     setStartDate("");
     setEndDate("");
+    setShowMachineDropdown(false);
   };
 
   const handleMachineSelection = (machine) => {
@@ -547,6 +628,101 @@ const Repairing_Dashboard = () => {
         {/* Filters */}
         <div className="p-4 bg-white shadow-md rounded-xl">
           <div className="flex flex-wrap items-end gap-4">
+            {/* Month Filter */}
+            <div className="flex flex-col min-w-[180px]">
+              <label className="mb-1 text-sm font-medium text-gray-700">
+                <Calendar size={14} className="inline mr-1" />
+                Month
+              </label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="all">All Months</option>
+                {monthsList.map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Machine Filter - Multi-select Dropdown */}
+            <div
+              ref={machineDropdownRef}
+              className="flex flex-col min-w-[200px] relative"
+            >
+              <label className="mb-1 text-sm font-medium text-gray-700">
+                <Wrench size={14} className="inline mr-1" />
+                Machine
+              </label>
+              <div
+                onClick={() => setShowMachineDropdown(!showMachineDropdown)}
+                className="px-3 py-2 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 flex items-center justify-between min-h-[42px]"
+              >
+                <span className="text-gray-700 truncate">
+                  {selectedMachines.length > 0
+                    ? `${selectedMachines.length} selected`
+                    : "All Machines"}
+                </span>
+                <svg
+                  className={`w-4 h-4 text-gray-500 transition-transform ${
+                    showMachineDropdown ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+              {showMachineDropdown && (
+                <div className="absolute z-20 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 top-full">
+                  <div className="sticky top-0 p-2 bg-white border-b border-gray-200">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedMachines([]);
+                      }}
+                      className="text-xs font-medium text-orange-600 hover:text-orange-700"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                  {machinesList.map((machine) => (
+                    <div
+                      key={machine}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMachineSelection(machine);
+                      }}
+                      className={`px-3 py-2 cursor-pointer hover:bg-orange-50 flex items-center gap-2 ${
+                        selectedMachines.includes(machine)
+                          ? "bg-orange-100"
+                          : ""
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedMachines.includes(machine)}
+                        onChange={() => {}}
+                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-gray-700 truncate">
+                        {machine}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Status Filter */}
             <div className="flex flex-col min-w-[150px]">
               <label className="mb-1 text-sm font-medium text-gray-700">
@@ -609,6 +785,7 @@ const Repairing_Dashboard = () => {
             {(selectedMachines.length > 0 ||
               selectedStatus !== "all" ||
               selectedAssignedTo !== "all" ||
+              selectedMonth !== "all" ||
               startDate ||
               endDate ||
               searchTerm) && (
@@ -621,6 +798,31 @@ const Repairing_Dashboard = () => {
               </button>
             )}
           </div>
+
+          {/* Selected Machines Tags */}
+          {selectedMachines.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-200">
+              <span className="self-center text-xs text-gray-500">
+                Selected Machines:
+              </span>
+              {selectedMachines.map((machine) => (
+                <span
+                  key={machine}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded-full"
+                >
+                  {machine.length > 20
+                    ? machine.substring(0, 20) + "..."
+                    : machine}
+                  <button
+                    onClick={() => handleMachineSelection(machine)}
+                    className="hover:text-orange-900"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Stat Cards */}
@@ -657,8 +859,7 @@ const Repairing_Dashboard = () => {
           />
         </div>
 
-
-    {/* Data Table */}
+        {/* Data Table */}
         <div className="mb-6 overflow-hidden bg-white shadow-md rounded-xl">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
@@ -863,6 +1064,178 @@ const Repairing_Dashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Admin Done Records Section */}
+        {historyLoading && (
+          <div className="p-8 mb-6 bg-white shadow-md rounded-xl">
+            <div className="flex items-center justify-center gap-3">
+              <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+              <span className="font-medium text-purple-600">
+                Loading maintenance history...
+              </span>
+            </div>
+          </div>
+        )}
+        {!historyLoading && (
+          <div className="mb-6 overflow-hidden bg-white shadow-md rounded-xl">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-purple-800">
+                  Admin Processed Records (Checklist Maintenance)
+                </h3>
+                <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">
+                  {adminDoneRecords.length} records
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-purple-600">
+                Tasks that have been reviewed and marked by admin
+              </p>
+            </div>
+
+            {/* Desktop Table */}
+            {adminDoneRecords.length > 0 && (
+              <div className="hidden md:block overflow-x-auto max-h-[400px]">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="sticky top-0 z-10 bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Task ID
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Company Name
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Name
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Task Description
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Task Start Date
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Actual
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                        Admin Done
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {adminDoneRecords.slice(0, 50).map((record, index) => (
+                      <tr
+                        key={record._id || index}
+                        className="transition-colors hover:bg-purple-50/30"
+                      >
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                          {record.col1 || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-semibold text-purple-700">
+                          {record.col2 || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {record.col4 || "—"}
+                        </td>
+                        <td
+                          className="px-4 py-3 text-sm text-gray-600 max-w-[200px] truncate"
+                          title={record.col5}
+                        >
+                          {record.col5 || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                          {record.col6 || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                          {record.col10 || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              record.col12 === "Yes"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {record.col12 || "—"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              record.col15 === "Done"
+                                ? "bg-green-100 text-green-800"
+                                : record.col15 === "Not Done"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {record.col15 || "Pending"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Mobile Card View */}
+            {adminDoneRecords.length > 0 && (
+              <div className="md:hidden p-4 space-y-4 max-h-[400px] overflow-y-auto">
+                {adminDoneRecords.slice(0, 30).map((record, index) => (
+                  <div
+                    key={record._id || index}
+                    className="p-4 border border-purple-200 rounded-xl bg-purple-50/50"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="text-xs text-gray-500">{record.col1}</p>
+                        <p className="font-semibold text-purple-700">
+                          {record.col2}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                          record.col15 === "Done"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {record.col15}
+                      </span>
+                    </div>
+                    <p className="mb-2 text-sm text-gray-600 line-clamp-2">
+                      {record.col5 || "No description"}
+                    </p>
+                    <div className="flex items-center justify-between pt-2 text-xs text-gray-500 border-t border-purple-200">
+                      <span>{record.col4}</span>
+                      <span>{record.col6}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {adminDoneRecords.length === 0 && (
+              <div className="py-12 text-center">
+                <div className="text-gray-400 mb-2">
+                  <CheckCircle2 className="w-12 h-12 mx-auto opacity-50" />
+                </div>
+                <p className="text-gray-500 font-medium">
+                  No admin processed records yet
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  Records will appear here once admin marks them as done
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Charts Section */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {/* Bar Chart - Repairs by Machine */}
@@ -1029,10 +1402,6 @@ const Repairing_Dashboard = () => {
             )}
           </div>
         </div>
-
-        
-
-    
       </div>
     </AdminLayout>
   );

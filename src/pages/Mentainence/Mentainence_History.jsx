@@ -12,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import AdminLayout from "../../components/layout/AdminLayout";
+import useMaintenanceHistoryStore from "../../stores/useMaintenanceHistoryStore";
 
 // Configuration object - Move all configurations here
 const CONFIG = {
@@ -232,6 +233,8 @@ function Mentainence_History() {
       let result;
       try {
         result = JSON.parse(responseText);
+
+        console.log(result, "this is the responce ");
       } catch (parseError) {
         console.error("JSON Parse Error:", parseError);
         throw new Error(`Invalid response format: ${responseText}`);
@@ -308,12 +311,12 @@ function Mentainence_History() {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div className="w-full max-w-md p-6 mx-4 bg-white rounded-lg shadow-xl">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-yellow-100 text-yellow-600 rounded-full p-3 mr-4">
+            <div className="p-3 mr-4 text-yellow-600 bg-yellow-100 rounded-full">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
+                className="w-6 h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -331,7 +334,7 @@ function Mentainence_History() {
             </h2>
           </div>
 
-          <p className="text-gray-600 text-center mb-6">
+          <p className="mb-6 text-center text-gray-600">
             Are you sure you want to mark {itemCount}{" "}
             {itemCount === 1 ? "item" : "items"} as Admin Done?
           </p>
@@ -339,13 +342,13 @@ function Mentainence_History() {
           <div className="flex justify-center space-x-4">
             <button
               onClick={onCancel}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+              className="px-4 py-2 text-gray-700 transition-colors bg-gray-200 rounded-md hover:bg-gray-300"
             >
               Cancel
             </button>
             <button
               onClick={onConfirm}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              className="px-4 py-2 text-white transition-colors bg-green-600 rounded-md hover:bg-green-700"
             >
               Confirm
             </button>
@@ -701,6 +704,10 @@ function Mentainence_History() {
 
       setAccountData(pendingAccounts);
       setHistoryData(historyRows);
+
+      // Store in Zustand for sharing with Repairing_Dashboard
+      useMaintenanceHistoryStore.getState().setHistoryData(historyRows);
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching sheet data:", error);
@@ -746,15 +753,15 @@ function Mentainence_History() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-purple-700 text-center sm:text-left">
+          <h1 className="text-2xl font-bold tracking-tight text-center text-purple-700 sm:text-left">
             {CONFIG.PAGE_CONFIG.historyTitle}
           </h1>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+          <div className="flex flex-col w-full gap-3 sm:flex-row sm:items-center sm:gap-4 sm:w-auto">
             {/* Search box */}
             <div className="relative w-full sm:w-64">
               <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
                 size={18}
               />
               <input
@@ -762,15 +769,15 @@ function Mentainence_History() {
                 placeholder={"Search history..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 w-full"
+                className="w-full py-2 pl-10 pr-4 border border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
 
             {/* Machine Filter Dropdown */}
             {machinesList.length > 0 && (
               <div className="flex flex-col">
-                <div className="mb-2 flex items-center">
-                  <span className="sm:hidden text-sm font-medium text-purple-700">
+                <div className="flex items-center mb-2">
+                  <span className="text-sm font-medium text-purple-700 sm:hidden">
                     Filter by Machine:
                   </span>
                 </div>
@@ -785,13 +792,13 @@ function Mentainence_History() {
                       className="w-full p-2 pr-8 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                     <Search
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      className="absolute text-gray-400 transform -translate-y-1/2 right-2 top-1/2"
                       size={18}
                     />
                   </div>
 
                   {showMachineDropdown && (
-                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-20 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg max-h-60">
                       {machinesList
                         .filter((machine) =>
                           machine
@@ -801,16 +808,16 @@ function Mentainence_History() {
                         .map((machine, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center px-3 py-2 hover:bg-purple-50 cursor-pointer"
+                            className="flex items-center px-3 py-2 cursor-pointer hover:bg-purple-50"
                             onClick={() => handleMachineSelection(machine)}
                           >
                             <input
                               type="checkbox"
                               checked={selectedMachines.includes(machine)}
                               onChange={() => {}}
-                              className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 pointer-events-none"
+                              className="w-4 h-4 text-purple-600 border-gray-300 rounded pointer-events-none focus:ring-purple-500"
                             />
-                            <label className="ml-2 text-sm text-gray-700 cursor-pointer flex-1">
+                            <label className="flex-1 ml-2 text-sm text-gray-700 cursor-pointer">
                               {machine}
                             </label>
                           </div>
@@ -828,11 +835,11 @@ function Mentainence_History() {
                   )}
 
                   {selectedMachines.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 mt-2">
                       {selectedMachines.map((machine, idx) => (
                         <span
                           key={idx}
-                          className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-xs"
+                          className="inline-flex items-center px-2 py-1 text-xs text-purple-700 bg-purple-100 rounded-md"
                         >
                           {machine}
                           <button
@@ -853,11 +860,11 @@ function Mentainence_History() {
             {showHistory &&
               userRole === "admin" &&
               selectedHistoryItems.length > 0 && (
-                <div className="fixed bottom-6 right-6 sm:top-40 sm:right-10 z-50">
+                <div className="fixed z-50 bottom-6 right-6 sm:top-40 sm:right-10">
                   <button
                     onClick={handleMarkMultipleDone}
                     disabled={markingAsDone}
-                    className="rounded-md bg-green-600 text-white px-4 py-2 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    className="w-full px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
                   >
                     {markingAsDone
                       ? "Processing..."
@@ -869,26 +876,26 @@ function Mentainence_History() {
         </div>
 
         {successMessage && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center justify-between">
+          <div className="flex items-center justify-between px-4 py-3 text-green-700 border border-green-200 rounded-md bg-green-50">
             <div className="flex items-center">
-              <CheckCircle2 className="h-5 w-5 mr-2 text-green-500" />
+              <CheckCircle2 className="w-5 h-5 mr-2 text-green-500" />
               {successMessage}
             </div>
             <button
               onClick={() => setSuccessMessage("")}
               className="text-green-500 hover:text-green-700"
             >
-              <X className="h-5 w-5" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         )}
 
-        <div className="rounded-lg border border-purple-200 shadow-md bg-white overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100 p-4">
-            <h2 className="text-purple-700 font-medium">
+        <div className="overflow-hidden bg-white border border-purple-200 rounded-lg shadow-md">
+          <div className="p-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50">
+            <h2 className="font-medium text-purple-700">
               {`Completed ${CONFIG.SHEET_NAME} Tasks`}
             </h2>
-            <p className="text-purple-600 text-sm">
+            <p className="text-sm text-purple-600">
               {`${CONFIG.PAGE_CONFIG.historyDescription} for ${
                 userRole === "admin" ? "all" : "your"
               } tasks`}
@@ -896,15 +903,15 @@ function Mentainence_History() {
           </div>
 
           {loading ? (
-            <div className="text-center py-10">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+            <div className="py-10 text-center">
+              <div className="inline-block w-8 h-8 mb-4 border-t-2 border-b-2 border-purple-500 rounded-full animate-spin"></div>
               <p className="text-purple-600">Loading task data...</p>
             </div>
           ) : error ? (
-            <div className="bg-red-50 p-4 rounded-md text-red-800 text-center">
+            <div className="p-4 text-center text-red-800 rounded-md bg-red-50">
               {error}{" "}
               <button
-                className="underline ml-2"
+                className="ml-2 underline"
                 onClick={() => window.location.reload()}
               >
                 Try again
@@ -918,7 +925,7 @@ function Mentainence_History() {
                   {getFilteredMembersList().length > 0 &&
                     userRole === "admin" && (
                       <div className="flex flex-col">
-                        <div className="mb-2 flex items-center">
+                        <div className="flex items-center mb-2">
                           <span className="text-sm font-medium text-purple-700">
                             Filter by Member:
                           </span>
@@ -936,13 +943,13 @@ function Mentainence_History() {
                               className="w-full p-2 pr-8 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
                             <Search
-                              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                              className="absolute text-gray-400 transform -translate-y-1/2 right-2 top-1/2"
                               size={18}
                             />
                           </div>
 
                           {showMemberDropdown && (
-                            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            <div className="absolute z-20 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg max-h-60">
                               {getFilteredMembersList()
                                 .filter((member) =>
                                   member
@@ -952,7 +959,7 @@ function Mentainence_History() {
                                 .map((member, idx) => (
                                   <div
                                     key={idx}
-                                    className="flex items-center px-3 py-2 hover:bg-purple-50 cursor-pointer"
+                                    className="flex items-center px-3 py-2 cursor-pointer hover:bg-purple-50"
                                     onClick={() =>
                                       handleMemberSelection(member)
                                     }
@@ -961,9 +968,9 @@ function Mentainence_History() {
                                       type="checkbox"
                                       checked={selectedMembers.includes(member)}
                                       onChange={() => {}}
-                                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 pointer-events-none"
+                                      className="w-4 h-4 text-purple-600 border-gray-300 rounded pointer-events-none focus:ring-purple-500"
                                     />
-                                    <label className="ml-2 text-sm text-gray-700 cursor-pointer flex-1">
+                                    <label className="flex-1 ml-2 text-sm text-gray-700 cursor-pointer">
                                       {member}
                                     </label>
                                   </div>
@@ -981,11 +988,11 @@ function Mentainence_History() {
                           )}
 
                           {selectedMembers.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 mt-2">
                               {selectedMembers.map((member, idx) => (
                                 <span
                                   key={idx}
-                                  className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-xs"
+                                  className="inline-flex items-center px-2 py-1 text-xs text-purple-700 bg-purple-100 rounded-md"
                                 >
                                   {member}
                                   <button
@@ -1004,7 +1011,7 @@ function Mentainence_History() {
                       </div>
                     )}
                   <div className="flex flex-col">
-                    <div className="mb-2 flex items-center">
+                    <div className="flex items-center mb-2">
                       <span className="text-sm font-medium text-purple-700">
                         Filter by Date Range:
                       </span>
@@ -1013,7 +1020,7 @@ function Mentainence_History() {
                       <div className="flex items-center">
                         <label
                           htmlFor="start-date"
-                          className="text-sm text-gray-700 mr-1"
+                          className="mr-1 text-sm text-gray-700"
                         >
                           From
                         </label>
@@ -1022,13 +1029,13 @@ function Mentainence_History() {
                           type="date"
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
-                          className="text-sm border border-gray-200 rounded-md p-1"
+                          className="p-1 text-sm border border-gray-200 rounded-md"
                         />
                       </div>
                       <div className="flex items-center">
                         <label
                           htmlFor="end-date"
-                          className="text-sm text-gray-700 mr-1"
+                          className="mr-1 text-sm text-gray-700"
                         >
                           To
                         </label>
@@ -1037,7 +1044,7 @@ function Mentainence_History() {
                           type="date"
                           value={endDate}
                           onChange={(e) => setEndDate(e.target.value)}
-                          className="text-sm border border-gray-200 rounded-md p-1"
+                          className="p-1 text-sm border border-gray-200 rounded-md"
                         />
                       </div>
                     </div>
@@ -1049,7 +1056,7 @@ function Mentainence_History() {
                     searchTerm) && (
                     <button
                       onClick={resetFilters}
-                      className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 text-sm"
+                      className="px-3 py-1 text-sm text-red-700 bg-red-100 rounded-md hover:bg-red-200"
                     >
                       Clear All Filters
                     </button>
@@ -1070,7 +1077,7 @@ function Mentainence_History() {
               {/* Task Statistics */}
               <div className="p-4 border-b border-purple-100 bg-blue-50">
                 <div className="flex flex-col">
-                  <h3 className="text-sm font-medium text-blue-700 mb-2">
+                  <h3 className="mb-2 text-sm font-medium text-blue-700">
                     Task Completion Statistics:
                   </h3>
                   <div className="flex flex-wrap gap-4">
@@ -1114,7 +1121,7 @@ function Mentainence_History() {
               {/* History Table - Optimized for performance */}
               <div className="hidden sm:block h-[calc(100vh-300px)] overflow-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0 z-10">
+                  <thead className="sticky top-0 z-10 bg-gray-50">
                     <tr>
                       {/* NEW: Admin Done Column - NOW FIRST */}
                       {userRole === "admin" && (
@@ -1125,11 +1132,11 @@ function Mentainence_History() {
 
                       {/* Admin Select Column Header */}
                       {userRole === "admin" && (
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        <th className="w-12 px-3 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                           <div className="flex flex-col items-center">
                             <input
                               type="checkbox"
-                              className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                               checked={
                                 filteredHistoryData.filter(
                                   (item) =>
@@ -1166,7 +1173,7 @@ function Mentainence_History() {
                                 }
                               }}
                             />
-                            <span className="text-xs text-gray-400 mt-1">
+                            <span className="mt-1 text-xs text-gray-400">
                               Admin
                             </span>
                           </div>
@@ -1257,7 +1264,7 @@ function Mentainence_History() {
                                           [history._id]: e.target.value,
                                         }))
                                       }
-                                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                       disabled={isSaving}
                                     >
                                       <option value="Not Done">Not Done</option>
@@ -1271,9 +1278,9 @@ function Mentainence_History() {
                                         title="Save changes"
                                       >
                                         {isSaving ? (
-                                          <div className="animate-spin h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full"></div>
+                                          <div className="w-4 h-4 border-2 border-green-600 rounded-full animate-spin border-t-transparent"></div>
                                         ) : (
-                                          <Save className="h-4 w-4" />
+                                          <Save className="w-4 h-4" />
                                         )}
                                       </button>
                                       <button
@@ -1284,7 +1291,7 @@ function Mentainence_History() {
                                         className="p-1 text-red-600 hover:text-red-800 disabled:opacity-50"
                                         title="Cancel editing"
                                       >
-                                        <XCircle className="h-4 w-4" />
+                                        <XCircle className="w-4 h-4" />
                                       </button>
                                     </div>
                                   </div>
@@ -1296,13 +1303,13 @@ function Mentainence_History() {
                                       history["col15"].toString().trim() ===
                                         "Done" ? (
                                         <div className="flex items-center">
-                                          <div className="h-4 w-4 rounded border-gray-300 text-green-600 bg-green-100 mr-2 flex items-center justify-center">
+                                          <div className="flex items-center justify-center w-4 h-4 mr-2 text-green-600 bg-green-100 border-gray-300 rounded">
                                             <span className="text-xs text-green-600">
                                               ✓
                                             </span>
                                           </div>
                                           <div className="flex flex-col">
-                                            <div className="font-medium text-green-700 text-sm">
+                                            <div className="text-sm font-medium text-green-700">
                                               Done
                                             </div>
                                           </div>
@@ -1310,8 +1317,8 @@ function Mentainence_History() {
                                       ) : !isEmpty(history["col15"]) &&
                                         history["col15"].toString().trim() ===
                                           "Not Done" ? (
-                                        <div className="flex items-center text-red-500 text-sm">
-                                          <div className="h-4 w-4 rounded border-gray-300 bg-red-100 mr-2 flex items-center justify-center">
+                                        <div className="flex items-center text-sm text-red-500">
+                                          <div className="flex items-center justify-center w-4 h-4 mr-2 bg-red-100 border-gray-300 rounded">
                                             <span className="text-xs text-red-600">
                                               ✗
                                             </span>
@@ -1321,18 +1328,18 @@ function Mentainence_History() {
                                           </span>
                                         </div>
                                       ) : (
-                                        <div className="flex items-center text-gray-400 text-sm">
-                                          <div className="h-4 w-4 rounded border-gray-300 mr-2"></div>
+                                        <div className="flex items-center text-sm text-gray-400">
+                                          <div className="w-4 h-4 mr-2 border-gray-300 rounded"></div>
                                           <span>Pending</span>
                                         </div>
                                       )}
                                     </div>
                                     <button
                                       onClick={() => handleEditClick(history)}
-                                      className="p-1 text-blue-600 hover:text-blue-800 ml-2"
+                                      className="p-1 ml-2 text-blue-600 hover:text-blue-800"
                                       title="Edit admin status"
                                     >
-                                      <Edit className="h-4 w-4" />
+                                      <Edit className="w-4 h-4" />
                                     </button>
                                   </div>
                                 )}
@@ -1341,7 +1348,7 @@ function Mentainence_History() {
 
                             {/* SECOND: Admin Select Checkbox - Hide for Done and Not Done items */}
                             {userRole === "admin" && (
-                              <td className="px-3 py-4 w-12">
+                              <td className="w-12 px-3 py-4">
                                 {!isEmpty(history["col15"]) &&
                                 (history["col15"].toString().trim() ===
                                   "Done" ||
@@ -1387,7 +1394,7 @@ function Mentainence_History() {
                                   <div className="flex flex-col items-center">
                                     <input
                                       type="checkbox"
-                                      className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                                       checked={selectedHistoryItems.some(
                                         (item) => item._id === history._id
                                       )}
@@ -1404,7 +1411,7 @@ function Mentainence_History() {
                                         );
                                       }}
                                     />
-                                    <span className="text-xs text-gray-400 mt-1 text-center break-words">
+                                    <span className="mt-1 text-xs text-center text-gray-400 break-words">
                                       Mark Done
                                     </span>
                                   </div>
@@ -1541,7 +1548,7 @@ function Mentainence_History() {
                                   href={history["col14"]}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 underline flex items-center break-words"
+                                  className="flex items-center text-blue-600 underline break-words hover:text-blue-800"
                                 >
                                   <img
                                     src={
@@ -1549,7 +1556,7 @@ function Mentainence_History() {
                                       "/placeholder.svg?height=32&width=32"
                                     }
                                     alt="Attachment"
-                                    className="h-8 w-8 object-cover rounded-md mr-2 flex-shrink-0"
+                                    className="flex-shrink-0 object-cover w-8 h-8 mr-2 rounded-md"
                                   />
                                   <span className="break-words">View</span>
                                 </a>
@@ -1601,12 +1608,12 @@ function Mentainence_History() {
                     return (
                       <div
                         key={history._id}
-                        className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                        className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm"
                       >
                         {/* Mobile card content - replicate your table row data here */}
                         <div className="space-y-3">
                           {userRole === "admin" && (
-                            <div className="px-3 py-4 w-12">
+                            <div className="w-12 px-3 py-4">
                               {!isEmpty(history["col15"]) &&
                               (history["col15"].toString().trim() === "Done" ||
                                 history["col15"].toString().trim() ===
@@ -1651,7 +1658,7 @@ function Mentainence_History() {
                                 <div className="flex flex-col items-center">
                                   <input
                                     type="checkbox"
-                                    className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                                     checked={selectedHistoryItems.some(
                                       (item) => item._id === history._id
                                     )}
@@ -1667,7 +1674,7 @@ function Mentainence_History() {
                                       );
                                     }}
                                   />
-                                  <span className="text-xs text-gray-400 mt-1 text-center break-words">
+                                  <span className="mt-1 text-xs text-center text-gray-400 break-words">
                                     Mark Done
                                   </span>
                                 </div>
@@ -1676,7 +1683,7 @@ function Mentainence_History() {
                           )}
                           {/* Admin Done Section */}
                           {userRole === "admin" && (
-                            <div className="flex justify-between items-center border-b pb-2">
+                            <div className="flex items-center justify-between pb-2 border-b">
                               <span className="font-medium text-gray-700">
                                 Admin Status:
                               </span>
@@ -1695,7 +1702,7 @@ function Mentainence_History() {
                                         [history._id]: e.target.value,
                                       }))
                                     }
-                                    className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     disabled={isSaving}
                                   >
                                     <option value="Not Done">Not Done</option>
@@ -1709,9 +1716,9 @@ function Mentainence_History() {
                                       title="Save changes"
                                     >
                                       {isSaving ? (
-                                        <div className="animate-spin h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full"></div>
+                                        <div className="w-4 h-4 border-2 border-green-600 rounded-full animate-spin border-t-transparent"></div>
                                       ) : (
-                                        <Save className="h-4 w-4" />
+                                        <Save className="w-4 h-4" />
                                       )}
                                     </button>
                                     <button
@@ -1722,7 +1729,7 @@ function Mentainence_History() {
                                       className="p-1 text-red-600 hover:text-red-800 disabled:opacity-50"
                                       title="Cancel editing"
                                     >
-                                      <XCircle className="h-4 w-4" />
+                                      <XCircle className="w-4 h-4" />
                                     </button>
                                   </div>
                                 </div>
@@ -1734,13 +1741,13 @@ function Mentainence_History() {
                                     history["col15"].toString().trim() ===
                                       "Done" ? (
                                       <div className="flex items-center">
-                                        <div className="h-4 w-4 rounded border-gray-300 text-green-600 bg-green-100 mr-2 flex items-center justify-center">
+                                        <div className="flex items-center justify-center w-4 h-4 mr-2 text-green-600 bg-green-100 border-gray-300 rounded">
                                           <span className="text-xs text-green-600">
                                             ✓
                                           </span>
                                         </div>
                                         <div className="flex flex-col">
-                                          <div className="font-medium text-green-700 text-sm">
+                                          <div className="text-sm font-medium text-green-700">
                                             Done
                                           </div>
                                         </div>
@@ -1748,8 +1755,8 @@ function Mentainence_History() {
                                     ) : !isEmpty(history["col15"]) &&
                                       history["col15"].toString().trim() ===
                                         "Not Done" ? (
-                                      <div className="flex items-center text-red-500 text-sm">
-                                        <div className="h-4 w-4 rounded border-gray-300 bg-red-100 mr-2 flex items-center justify-center">
+                                      <div className="flex items-center text-sm text-red-500">
+                                        <div className="flex items-center justify-center w-4 h-4 mr-2 bg-red-100 border-gray-300 rounded">
                                           <span className="text-xs text-red-600">
                                             ✗
                                           </span>
@@ -1759,18 +1766,18 @@ function Mentainence_History() {
                                         </span>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center text-gray-400 text-sm">
-                                        <div className="h-4 w-4 rounded border-gray-300 mr-2"></div>
+                                      <div className="flex items-center text-sm text-gray-400">
+                                        <div className="w-4 h-4 mr-2 border-gray-300 rounded"></div>
                                         <span>Pending</span>
                                       </div>
                                     )}
                                   </div>
                                   <button
                                     onClick={() => handleEditClick(history)}
-                                    className="p-1 text-blue-600 hover:text-blue-800 ml-2"
+                                    className="p-1 ml-2 text-blue-600 hover:text-blue-800"
                                     title="Edit admin status"
                                   >
-                                    <Edit className="h-4 w-4" />
+                                    <Edit className="w-4 h-4" />
                                   </button>
                                 </div>
                               )}
@@ -1778,7 +1785,7 @@ function Mentainence_History() {
                           )}
 
                           {/* Task ID */}
-                          <div className="flex space-x-3 items-center border-b pb-2">
+                          <div className="flex items-center pb-2 space-x-3 border-b">
                             <span className="font-medium text-gray-700">
                               Task ID:
                             </span>
@@ -1788,7 +1795,7 @@ function Mentainence_History() {
                           </div>
 
                           {/* Machine Name */}
-                          <div className="flex space-x-3 items-center border-b pb-2">
+                          <div className="flex items-center pb-2 space-x-3 border-b">
                             <span className="font-medium text-gray-700">
                               Machine Name:
                             </span>
@@ -1856,12 +1863,12 @@ function Mentainence_History() {
                                   href={history["col14"]}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 text-sm"
+                                  className="text-sm text-blue-600"
                                 >
                                   View
                                 </a>
                               ) : (
-                                <span className="text-gray-400 text-sm">
+                                <span className="text-sm text-gray-400">
                                   No attachment
                                 </span>
                               )}
@@ -1874,7 +1881,7 @@ function Mentainence_History() {
                     );
                   })
                 ) : (
-                  <div className="text-center text-gray-500 py-8">
+                  <div className="py-8 text-center text-gray-500">
                     {searchTerm ||
                     selectedMembers.length > 0 ||
                     startDate ||
