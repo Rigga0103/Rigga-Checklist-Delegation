@@ -13,7 +13,6 @@ import {
   Search,
 } from "lucide-react";
 import AdminLayout from "../../components/layout/AdminLayout.jsx";
-import MaintenanceDashboard from "../../components/MaintenanceDashboard.jsx";
 import RepairingDashboardInner from "../../components/RepairingDashboardInner.jsx";
 import {
   BarChart,
@@ -1269,10 +1268,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Conditionally render Maintenance Dashboard, Repairing Dashboard, or normal dashboard */}
-        {dashboardType === "mentainance" ? (
-          <MaintenanceDashboard />
-        ) : dashboardType === "repairing" ? (
+        {/* Conditionally render Repair & Maintenance Dashboard or normal dashboard */}
+        {dashboardType === "mentainance" || dashboardType === "repairing" ? (
           <RepairingDashboardInner />
         ) : (
           <>

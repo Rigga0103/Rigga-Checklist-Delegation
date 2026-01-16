@@ -370,7 +370,7 @@ const MaintenanceDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">
-          Maintenance Dashboard
+          Maintenance Dashboard 
         </h1>
         {loadingTasks && (
           <div className="flex items-center gap-2 text-blue-600">

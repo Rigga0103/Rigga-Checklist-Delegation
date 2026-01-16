@@ -24,7 +24,7 @@ const CONFIG = {
   // Sheet name to work with
   SHEET_NAME: "Checklist_mentainence",
   // Page configuration
-  PAGE_CONFIG: {
+  PAGE_CONFIG: { 
     title: "Mentainence Tasks",
     historyTitle: "Approval Pending Tasks",
     description: "Showing today, tomorrow's tasks and past due tasks",

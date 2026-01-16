@@ -17,10 +17,12 @@ import {
   TrendingUp,
   Loader2,
   AlertCircle,
+  AlertTriangle,
   Users,
   Calendar,
   FileText,
   Camera,
+  ClipboardList,
 } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import {
@@ -41,6 +43,7 @@ import {
 
 const SHEET_ID = "1pjNOV1ogLtiMm-Ow9_UVbsd3oN52jA5FdLGLgKwqlcw";
 const FORM_SHEET = "Maitenence_Form";
+const MAINTENANCE_SHEET = "Checklist_mentainence";
 
 const COLORS = [
   "#22c55e",
@@ -72,6 +75,9 @@ const Repairing_Dashboard = () => {
   const [showMachineDropdown, setShowMachineDropdown] = useState(false);
   const machineDropdownRef = useRef(null);
 
+  // Toggle for admin records filter
+  const [showAdminDoneOnly, setShowAdminDoneOnly] = useState(false);
+
   // Get admin done records from Zustand store
   const historyData = useMaintenanceHistoryStore((state) => state.historyData);
   const historyLoading = useMaintenanceHistoryStore((state) => state.isLoading);
@@ -79,7 +85,25 @@ const Repairing_Dashboard = () => {
     (state) => state.fetchMaintenanceHistory
   );
 
-  const adminDoneRecords = useMemo(() => {
+  // Filter records based on toggle - show all by default, or filter by admin done
+  const displayedRecords = useMemo(() => {
+    if (showAdminDoneOnly) {
+      // Show only records where admin has taken action
+      return historyData.filter((item) => {
+        const adminDone = item["col15"];
+        return (
+          adminDone !== null &&
+          adminDone !== undefined &&
+          adminDone.toString().trim() !== ""
+        );
+      });
+    }
+    // Show all records by default
+    return historyData;
+  }, [historyData, showAdminDoneOnly]);
+
+  // Count for admin done records (for badge)
+  const adminDoneCount = useMemo(() => {
     return historyData.filter((item) => {
       const adminDone = item["col15"];
       return (
@@ -87,7 +111,7 @@ const Repairing_Dashboard = () => {
         adminDone !== undefined &&
         adminDone.toString().trim() !== ""
       );
-    });
+    }).length;
   }, [historyData]);
 
   // Fetch maintenance history on mount if not already loaded
@@ -128,6 +152,18 @@ const Repairing_Dashboard = () => {
   const [statusChartData, setStatusChartData] = useState([]);
   const [monthlyTrendData, setMonthlyTrendData] = useState([]);
   const [assignedToChartData, setAssignedToChartData] = useState([]);
+
+  // Maintenance System States (from Checklist_mentainence)
+  const [maintenanceLoading, setMaintenanceLoading] = useState(true);
+  const [maintenanceTasks, setMaintenanceTasks] = useState([]);
+  const [maintenanceStats, setMaintenanceStats] = useState({
+    totalMachines: 0,
+    totalTasks: 0,
+    completedTasks: 0,
+    pendingTasks: 0,
+    overdueTasks: 0,
+  });
+  const [frequencyChartData, setFrequencyChartData] = useState([]);
 
   // Parse date from various formats
   const parseDateFromString = (dateStr) => {
@@ -433,6 +469,122 @@ const Repairing_Dashboard = () => {
     fetchRepairData();
   }, [fetchRepairData]);
 
+  // Fetch Maintenance System Data (Checklist_mentainence)
+  useEffect(() => {
+    const fetchMaintenanceData = async () => {
+      try {
+        setMaintenanceLoading(true);
+        const response = await fetch(
+          `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${MAINTENANCE_SHEET}`
+        );
+        const text = await response.text();
+
+        // Parse gviz response
+        const jsonStart = text.indexOf("{");
+        const jsonEnd = text.lastIndexOf("}");
+        if (jsonStart === -1 || jsonEnd === -1) {
+          console.error("Invalid gviz response format");
+          setMaintenanceLoading(false);
+          return;
+        }
+        const jsonString = text.substring(jsonStart, jsonEnd + 1);
+        const data = JSON.parse(jsonString);
+
+        if (!data.table || !data.table.cols || !data.table.rows) {
+          console.error("Invalid table structure in gviz response");
+          setMaintenanceLoading(false);
+          return;
+        }
+
+        const headers = data.table.cols.map((col) => col.label);
+        const rows = data.table.rows;
+
+        const formattedData = rows.map((rowObj) => {
+          const row = rowObj.c;
+          const rowData = {};
+          row.forEach((cell, i) => {
+            rowData[headers[i]] = cell ? cell.f || cell.v || "" : "";
+          });
+          return rowData;
+        });
+
+        setMaintenanceTasks(formattedData);
+
+        // Debug: log available columns
+        if (formattedData.length > 0) {
+          console.log("Maintenance columns:", Object.keys(formattedData[0]));
+          console.log("Sample row:", formattedData[0]);
+        }
+
+        // Calculate unique machines - check multiple possible column names
+        const uniqueMachines = new Set(
+          formattedData
+            .map(
+              (item) =>
+                item["Serial No"] ||
+                item["Machine Name"] ||
+                item["Machine"] ||
+                item["Company Name"] ||
+                item["Serial Number"]
+            )
+            .filter(Boolean)
+        );
+
+        // Calculate completed tasks (both Task Start Date and Actual have values)
+        const completedTasks = formattedData.filter((task) => {
+          const taskStartDate = task["Task Start Date"];
+          const actual = task["Actual"];
+          const hasStartDate =
+            taskStartDate && String(taskStartDate).trim() !== "";
+          const hasActual = actual && String(actual).trim() !== "";
+          return hasStartDate && hasActual;
+        });
+
+        // Calculate overdue tasks (past start date with no Actual)
+        const today = new Date();
+        const overdueTasks = formattedData.filter((task) => {
+          const taskStartDate = new Date(task["Task Start Date"]);
+          const actual = task["Actual"];
+          const hasNoActual = !actual || String(actual).trim() === "";
+          return (
+            task["Task Start Date"] && hasNoActual && taskStartDate < today
+          );
+        });
+
+        setMaintenanceStats({
+          totalMachines: uniqueMachines.size,
+          totalTasks: formattedData.length,
+          completedTasks: completedTasks.length,
+          pendingTasks: formattedData.length - completedTasks.length,
+          overdueTasks: overdueTasks.length,
+        });
+
+        // Calculate frequency data
+        const frequencyCounts = {};
+        formattedData.forEach((task) => {
+          const frequency = task["Freq"] || task["Frequency"];
+          if (frequency && String(frequency).trim() !== "") {
+            const freqKey = String(frequency).trim();
+            frequencyCounts[freqKey] = (frequencyCounts[freqKey] || 0) + 1;
+          }
+        });
+
+        const freqData = Object.keys(frequencyCounts).map((frequency) => ({
+          name: frequency,
+          count: frequencyCounts[frequency],
+        }));
+        setFrequencyChartData(freqData);
+
+        setMaintenanceLoading(false);
+      } catch (error) {
+        console.error("Error fetching maintenance data:", error);
+        setMaintenanceLoading(false);
+      }
+    };
+
+    fetchMaintenanceData();
+  }, []);
+
   // Filter data
   const filteredData = useMemo(() => {
     return repairData.filter((item) => {
@@ -523,6 +675,115 @@ const Repairing_Dashboard = () => {
     setShowMachineDropdown(false);
   };
 
+  // Filtered repair stats based on current filters
+  const filteredRepairStats = useMemo(() => {
+    const data = filteredData;
+    const totalRepairs = data.length;
+    const totalCost = data.reduce(
+      (sum, item) => sum + (item.billAmount || 0),
+      0
+    );
+    const completedRepairs = data.filter(
+      (item) =>
+        item.status?.toLowerCase().includes("completed") ||
+        item.status?.toLowerCase().includes("done")
+    ).length;
+    const pendingRepairs = totalRepairs - completedRepairs;
+    const inProgressRepairs = data.filter((item) =>
+      item.status?.toLowerCase().includes("progress")
+    ).length;
+    const avgCostPerRepair = totalRepairs > 0 ? totalCost / totalRepairs : 0;
+
+    return {
+      totalRepairs,
+      totalCost,
+      completedRepairs,
+      pendingRepairs,
+      inProgressRepairs,
+      avgCostPerRepair,
+    };
+  }, [filteredData]);
+
+  // Filtered maintenance data based on selected machines (match by Firm/Company Name)
+  const filteredMaintenanceData = useMemo(() => {
+    if (selectedMachines.length === 0) {
+      return maintenanceTasks;
+    }
+    // Match maintenance tasks by Firm column (which corresponds to machine name in repairs)
+    return maintenanceTasks.filter((task) => {
+      const firmName =
+        task["Firm"] || task["Company Name"] || task["Machine Name"] || "";
+      return selectedMachines.some(
+        (machine) =>
+          firmName.toLowerCase().includes(machine.toLowerCase()) ||
+          machine.toLowerCase().includes(firmName.toLowerCase())
+      );
+    });
+  }, [maintenanceTasks, selectedMachines]);
+
+  // Filtered maintenance stats based on selected machines
+  const filteredMaintenanceStats = useMemo(() => {
+    const data = filteredMaintenanceData;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const uniqueMachines = new Set(
+      data
+        .map(
+          (item) =>
+            item["Serial No"] ||
+            item["Machine Name"] ||
+            item["Firm"] ||
+            item["Company Name"]
+        )
+        .filter(Boolean)
+    );
+
+    const completedTasks = data.filter((task) => {
+      const taskStartDate = task["Task Start Date"];
+      const actual = task["Actual"];
+      const hasStartDate = taskStartDate && String(taskStartDate).trim() !== "";
+      const hasActual = actual && String(actual).trim() !== "";
+      return hasStartDate && hasActual;
+    });
+
+    const overdueTasks = data.filter((task) => {
+      const taskStartDate = new Date(task["Task Start Date"]);
+      const actual = task["Actual"];
+      const hasNoActual = !actual || String(actual).trim() === "";
+      return task["Task Start Date"] && hasNoActual && taskStartDate < today;
+    });
+
+    return {
+      totalMachines: uniqueMachines.size,
+      totalTasks: data.length,
+      completedTasks: completedTasks.length,
+      pendingTasks: data.length - completedTasks.length,
+      overdueTasks: overdueTasks.length,
+    };
+  }, [filteredMaintenanceData]);
+
+  // Check if any filter is active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      selectedMachines.length > 0 ||
+      selectedStatus !== "all" ||
+      selectedAssignedTo !== "all" ||
+      selectedMonth !== "all" ||
+      searchTerm !== "" ||
+      startDate !== "" ||
+      endDate !== ""
+    );
+  }, [
+    selectedMachines,
+    selectedStatus,
+    selectedAssignedTo,
+    selectedMonth,
+    searchTerm,
+    startDate,
+    endDate,
+  ]);
+
   const handleMachineSelection = (machine) => {
     setSelectedMachines((prev) =>
       prev.includes(machine)
@@ -604,10 +865,11 @@ const Repairing_Dashboard = () => {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-              Repairing Dashboard
+              Repair & Maintenance Dashboard
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Overview of all repair and maintenance activities
+              Complete overview of repair requests and scheduled maintenance
+              activities
             </p>
           </div>
           <div className="relative w-full md:w-72">
@@ -825,38 +1087,125 @@ const Repairing_Dashboard = () => {
           )}
         </div>
 
-        {/* Stat Cards */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard
-            title="Total Repairs"
-            value={stats.totalRepairs.toLocaleString()}
-            icon={Wrench}
-            color="border-blue-500"
-            subtext="All time records"
-          />
-          <StatCard
-            title="Total Cost"
-            value={formatCurrency(stats.totalCost)}
-            icon={IndianRupee}
-            color="border-purple-500"
-            subtext={`Avg: ${formatCurrency(stats.avgCostPerRepair)}/repair`}
-          />
-          <StatCard
-            title="Completed"
-            value={stats.completedRepairs.toLocaleString()}
-            icon={CheckCircle2}
-            color="border-green-500"
-            subtext={`${(
-              (stats.completedRepairs / stats.totalRepairs) * 100 || 0
-            ).toFixed(1)}% completion`}
-          />
-          <StatCard
-            title="Pending"
-            value={stats.pendingRepairs.toLocaleString()}
-            icon={Clock}
-            color="border-amber-500"
-            subtext={`${stats.inProgressRepairs} in progress`}
-          />
+        {/* Repair System Overview - On Top */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Wrench size={20} className="text-orange-600" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-800">
+              Repair System Overview
+            </h2>
+            {hasActiveFilters && (
+              <span className="px-2 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded-full">
+                Filtered
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StatCard
+              title="Total Repair Requests"
+              value={filteredRepairStats.totalRepairs.toLocaleString()}
+              icon={Wrench}
+              color="border-blue-500"
+              subtext={
+                hasActiveFilters ? "Filtered results" : "All repair requests"
+              }
+            />
+            <StatCard
+              title="Total Repair Cost"
+              value={formatCurrency(filteredRepairStats.totalCost)}
+              icon={IndianRupee}
+              color="border-purple-500"
+              subtext={`Avg: ${formatCurrency(
+                filteredRepairStats.avgCostPerRepair
+              )}/repair`}
+            />
+            <StatCard
+              title="Repairs Completed"
+              value={filteredRepairStats.completedRepairs.toLocaleString()}
+              icon={CheckCircle2}
+              color="border-green-500"
+              subtext={`${(
+                (filteredRepairStats.completedRepairs /
+                  filteredRepairStats.totalRepairs) *
+                  100 || 0
+              ).toFixed(1)}% completion`}
+            />
+            <StatCard
+              title="Repairs Pending"
+              value={filteredRepairStats.pendingRepairs.toLocaleString()}
+              icon={Clock}
+              color="border-amber-500"
+              subtext={`${filteredRepairStats.inProgressRepairs} in progress`}
+            />
+          </div>
+        </div>
+
+        {/* Maintenance System Overview - Below Repair */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 rounded-lg">
+              <ClipboardList size={20} className="text-indigo-600" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-800">
+              Maintenance System Overview
+            </h2>
+            {maintenanceLoading && (
+              <div className="flex items-center gap-2 text-indigo-600">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Loading...</span>
+              </div>
+            )}
+            {hasActiveFilters && !maintenanceLoading && (
+              <span className="px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-full">
+                Filtered
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <StatCard
+              title="Total Machines"
+              value={filteredMaintenanceStats.totalMachines.toLocaleString()}
+              icon={Wrench}
+              color="border-blue-500"
+              subtext={hasActiveFilters ? "Filtered" : "Registered machines"}
+            />
+            <StatCard
+              title="Total Scheduled Tasks"
+              value={filteredMaintenanceStats.totalTasks.toLocaleString()}
+              icon={Calendar}
+              color="border-indigo-500"
+              subtext={
+                hasActiveFilters ? "Filtered tasks" : "Maintenance tasks"
+              }
+            />
+            <StatCard
+              title="Tasks Completed"
+              value={filteredMaintenanceStats.completedTasks.toLocaleString()}
+              icon={CheckCircle2}
+              color="border-green-500"
+              subtext={`${(
+                (filteredMaintenanceStats.completedTasks /
+                  filteredMaintenanceStats.totalTasks) *
+                  100 || 0
+              ).toFixed(1)}% done`}
+            />
+            <StatCard
+              title="Tasks Pending"
+              value={filteredMaintenanceStats.pendingTasks.toLocaleString()}
+              icon={Clock}
+              color="border-amber-500"
+              subtext="Awaiting completion"
+            />
+            <StatCard
+              title="Tasks Overdue"
+              value={filteredMaintenanceStats.overdueTasks.toLocaleString()}
+              icon={AlertTriangle}
+              color="border-red-500"
+              subtext="Past due date"
+            />
+          </div>
         </div>
 
         {/* Data Table */}
@@ -1079,21 +1428,56 @@ const Repairing_Dashboard = () => {
         {!historyLoading && (
           <div className="mb-6 overflow-hidden bg-white shadow-md rounded-xl">
             <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-purple-800">
-                  Admin Processed Records (Checklist Maintenance)
-                </h3>
-                <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">
-                  {adminDoneRecords.length} records
-                </span>
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-purple-800">
+                    Checklist Maintenance Tasks
+                  </h3>
+                  <p className="mt-1 text-sm text-purple-600">
+                    {showAdminDoneOnly
+                      ? "Showing only tasks processed by admin"
+                      : "Showing all maintenance tasks"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* Toggle Tabs */}
+                  <div className="flex p-1 bg-purple-100 rounded-lg">
+                    <button
+                      onClick={() => setShowAdminDoneOnly(false)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                        !showAdminDoneOnly
+                          ? "bg-white text-purple-700 shadow-sm"
+                          : "text-purple-600 hover:text-purple-800"
+                      }`}
+                    >
+                      All Tasks
+                      <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-purple-200 rounded-full">
+                        {historyData.length}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setShowAdminDoneOnly(true)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                        showAdminDoneOnly
+                          ? "bg-white text-purple-700 shadow-sm"
+                          : "text-purple-600 hover:text-purple-800"
+                      }`}
+                    >
+                      Admin Processed
+                      <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-green-200 text-green-800 rounded-full">
+                        {adminDoneCount}
+                      </span>
+                    </button>
+                  </div>
+                  <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">
+                    {displayedRecords.length} records
+                  </span>
+                </div>
               </div>
-              <p className="mt-1 text-sm text-purple-600">
-                Tasks that have been reviewed and marked by admin
-              </p>
             </div>
 
             {/* Desktop Table */}
-            {adminDoneRecords.length > 0 && (
+            {displayedRecords.length > 0 && (
               <div className="hidden md:block overflow-x-auto max-h-[400px]">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="sticky top-0 z-10 bg-gray-50">
@@ -1125,7 +1509,7 @@ const Repairing_Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {adminDoneRecords.slice(0, 50).map((record, index) => (
+                    {displayedRecords.slice(0, 50).map((record, index) => (
                       <tr
                         key={record._id || index}
                         className="transition-colors hover:bg-purple-50/30"
@@ -1154,12 +1538,16 @@ const Repairing_Dashboard = () => {
                         <td className="px-4 py-3">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              record.col12 === "Yes"
+                              record.col10 &&
+                              record.col10.toString().trim() !== ""
                                 ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
+                                : "bg-amber-100 text-amber-800"
                             }`}
                           >
-                            {record.col12 || "—"}
+                            {record.col10 &&
+                            record.col10.toString().trim() !== ""
+                              ? "Completed"
+                              : "Pending"}
                           </span>
                         </td>
                         <td className="px-4 py-3">
@@ -1183,9 +1571,9 @@ const Repairing_Dashboard = () => {
             )}
 
             {/* Mobile Card View */}
-            {adminDoneRecords.length > 0 && (
+            {displayedRecords.length > 0 && (
               <div className="md:hidden p-4 space-y-4 max-h-[400px] overflow-y-auto">
-                {adminDoneRecords.slice(0, 30).map((record, index) => (
+                {displayedRecords.slice(0, 30).map((record, index) => (
                   <div
                     key={record._id || index}
                     className="p-4 border border-purple-200 rounded-xl bg-purple-50/50"
@@ -1220,15 +1608,15 @@ const Repairing_Dashboard = () => {
             )}
 
             {/* Empty state */}
-            {adminDoneRecords.length === 0 && (
+            {displayedRecords.length === 0 && (
               <div className="py-12 text-center">
-                <div className="text-gray-400 mb-2">
+                <div className="mb-2 text-gray-400">
                   <CheckCircle2 className="w-12 h-12 mx-auto opacity-50" />
                 </div>
-                <p className="text-gray-500 font-medium">
+                <p className="font-medium text-gray-500">
                   No admin processed records yet
                 </p>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="mt-1 text-sm text-gray-400">
                   Records will appear here once admin marks them as done
                 </p>
               </div>
@@ -1398,6 +1786,35 @@ const Repairing_Dashboard = () => {
             ) : (
               <div className="flex items-center justify-center h-[300px] text-gray-400">
                 No data available
+              </div>
+            )}
+          </div>
+
+          {/* Bar Chart - Maintenance Frequency Distribution */}
+          <div className="p-6 bg-white shadow-md rounded-xl">
+            <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
+              <ClipboardList size={20} className="text-indigo-500" />
+              Maintenance Frequency Distribution
+            </h3>
+            {frequencyChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={frequencyChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" fontSize={12} stroke="#888888" />
+                  <YAxis fontSize={12} stroke="#888888" />
+                  <Tooltip formatter={(value) => [value, "Tasks"]} />
+                  <Legend />
+                  <Bar
+                    dataKey="count"
+                    name="Number of Tasks"
+                    fill="#6366f1"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-400">
+                No frequency data available
               </div>
             )}
           </div>

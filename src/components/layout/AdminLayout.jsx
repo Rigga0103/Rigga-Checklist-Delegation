@@ -242,15 +242,8 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
     },
   ];
 
-  // Maintenance system routes
+  // Maintenance system routes (Dashboard removed - merged with Repairing)
   const maintenanceRoutes = [
-    {
-      href: "/maintenance-dashboard",
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      active: location.pathname === "/maintenance-dashboard",
-      showFor: ["admin"],
-    },
     {
       href: "/mentenance-pending",
       label: "Pending",

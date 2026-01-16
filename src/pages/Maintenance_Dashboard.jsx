@@ -1,14 +1,11 @@
 "use client";
 import React from "react";
-import AdminLayout from "../components/layout/AdminLayout";
-import MaintenanceDashboard from "../components/MaintenanceDashboard";
+import { Navigate } from "react-router-dom";
 
+// Maintenance Dashboard has been merged with Repairing Dashboard
+// Redirect to the combined Repair & Maintenance Dashboard
 const Maintenance_Dashboard = () => {
-  return (
-    <AdminLayout>
-      <MaintenanceDashboard />
-    </AdminLayout>
-  );
+  return <Navigate to="/repairing-dashboard" replace />;
 };
 
 export default Maintenance_Dashboard;

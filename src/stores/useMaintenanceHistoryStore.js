@@ -164,10 +164,9 @@ const useMaintenanceHistoryStore = create((set, get) => ({
         }
 
         const hasColumnG = !isEmpty(columnGValue);
-        const hasColumnK = !isEmpty(columnKValue);
 
-        // Only include completed tasks (has both start and actual date)
-        if (hasColumnG && hasColumnK) {
+        // Include ALL tasks that have a Task Start Date (both completed and pending)
+        if (hasColumnG) {
           const googleSheetsRowIndex = rowIndex + 1;
           const taskId = rowValues[1] || "";
           const stableId = taskId
