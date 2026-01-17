@@ -128,7 +128,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
   const getAccessibleDepartments = () => {
     const userRole = sessionStorage.getItem("role") || "user";
     return dataCategories.filter(
-      (cat) => !cat.showFor || cat.showFor.includes(userRole)
+      (cat) => !cat.showFor || cat.showFor.includes(userRole),
     );
   };
 
@@ -147,7 +147,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
     const roleMatch = route.showFor?.includes(userRole) || false;
     const userMatch = route.showForUsers
       ? route.showForUsers.some(
-          (allowedUser) => allowedUser.toLowerCase() === usernameLower
+          (allowedUser) => allowedUser.toLowerCase() === usernameLower,
         )
       : false;
 
@@ -210,6 +210,12 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: LayoutDashboard,
       active: location.pathname === "/repairing-dashboard",
       showFor: ["admin"],
+      showForUsers: [
+        "pratap kumar rout",
+        "Rakesh Kumar Rout",
+        "Kamal Sharma 65-18",
+        "Santosh Das 52-18",
+      ],
     },
     {
       href: "/repairing-form",
@@ -218,6 +224,12 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       active: location.pathname === "/repairing-form",
       showFor: ["admin"],
       showForUsers: ["pratap kumar rout"],
+      showForUsers: [
+        "pratap kumar rout",
+        "Rakesh Kumar Rout",
+        "Kamal Sharma 65-18",
+        "Santosh Das 52-18",
+      ],
     },
     {
       href: "/repairing-pending",
@@ -239,6 +251,12 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       active: location.pathname === "/repairing-history",
       showFor: ["admin"],
       showForUsers: ["pratap kumar rout"],
+      showForUsers: [
+        "pratap kumar rout",
+        "Rakesh Kumar Rout",
+        "Kamal Sharma 65-18",
+        "Santosh Das 52-18",
+      ],
     },
   ];
 

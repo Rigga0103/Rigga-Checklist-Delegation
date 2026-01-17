@@ -82,14 +82,26 @@ const Repairing_Dashboard = () => {
   const historyData = useMaintenanceHistoryStore((state) => state.historyData);
   const historyLoading = useMaintenanceHistoryStore((state) => state.isLoading);
   const fetchMaintenanceHistory = useMaintenanceHistoryStore(
-    (state) => state.fetchMaintenanceHistory
+    (state) => state.fetchMaintenanceHistory,
   );
+
+  // Filter history records based on selected machines
+  const filteredHistoryData = useMemo(() => {
+    if (selectedMachines.length === 0) return historyData;
+
+    return historyData.filter((item) => {
+      const companyName = item["col2"] || "";
+      return selectedMachines.some((machine) =>
+        companyName.toLowerCase().includes(machine.toLowerCase()),
+      );
+    });
+  }, [historyData, selectedMachines]);
 
   // Filter records based on toggle - show all by default, or filter by admin done
   const displayedRecords = useMemo(() => {
     if (showAdminDoneOnly) {
       // Show only records where admin has taken action
-      return historyData.filter((item) => {
+      return filteredHistoryData.filter((item) => {
         const adminDone = item["col15"];
         return (
           adminDone !== null &&
@@ -98,13 +110,13 @@ const Repairing_Dashboard = () => {
         );
       });
     }
-    // Show all records by default
-    return historyData;
-  }, [historyData, showAdminDoneOnly]);
+    // Show all records (already filtered by machine)
+    return filteredHistoryData;
+  }, [filteredHistoryData, showAdminDoneOnly]);
 
   // Count for admin done records (for badge)
   const adminDoneCount = useMemo(() => {
-    return historyData.filter((item) => {
+    return filteredHistoryData.filter((item) => {
       const adminDone = item["col15"];
       return (
         adminDone !== null &&
@@ -112,7 +124,7 @@ const Repairing_Dashboard = () => {
         adminDone.toString().trim() !== ""
       );
     }).length;
-  }, [historyData]);
+  }, [filteredHistoryData]);
 
   // Fetch maintenance history on mount if not already loaded
   useEffect(() => {
@@ -184,7 +196,7 @@ const Repairing_Dashboard = () => {
       return new Date(
         parseInt(parts[0]),
         parseInt(parts[1]),
-        parseInt(parts[2])
+        parseInt(parts[2]),
       );
     }
 
@@ -196,7 +208,7 @@ const Repairing_Dashboard = () => {
         return new Date(
           parseInt(parts[2]),
           parseInt(parts[1]) - 1,
-          parseInt(parts[0])
+          parseInt(parts[0]),
         );
       }
     }
@@ -232,7 +244,7 @@ const Repairing_Dashboard = () => {
       setLoading(true);
       const query = "SELECT A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q";
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${FORM_SHEET}&tq=${encodeURIComponent(
-        query
+        query,
       )}`;
 
       const response = await fetch(url);
@@ -323,7 +335,7 @@ const Repairing_Dashboard = () => {
         const date = parseDateFromString(timestamp);
         if (date) {
           const monthKey = `${date.getFullYear()}-${String(
-            date.getMonth() + 1
+            date.getMonth() + 1,
           ).padStart(2, "0")}`;
           if (!monthlyData[monthKey]) {
             monthlyData[monthKey] = { repairs: 0, cost: 0 };
@@ -438,7 +450,7 @@ const Repairing_Dashboard = () => {
           fullName: name,
           value,
           color: COLORS[index % COLORS.length],
-        })
+        }),
       );
       setStatusChartData(statusData);
 
@@ -475,7 +487,7 @@ const Repairing_Dashboard = () => {
       try {
         setMaintenanceLoading(true);
         const response = await fetch(
-          `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${MAINTENANCE_SHEET}`
+          `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${MAINTENANCE_SHEET}`,
         );
         const text = await response.text();
 
@@ -525,9 +537,9 @@ const Repairing_Dashboard = () => {
                 item["Machine Name"] ||
                 item["Machine"] ||
                 item["Company Name"] ||
-                item["Serial Number"]
+                item["Serial Number"],
             )
-            .filter(Boolean)
+            .filter(Boolean),
         );
 
         // Calculate completed tasks (both Task Start Date and Actual have values)
@@ -620,7 +632,7 @@ const Repairing_Dashboard = () => {
         const itemDate = parseDateFromString(item.timestamp);
         if (itemDate) {
           const itemMonthKey = `${itemDate.getFullYear()}-${String(
-            itemDate.getMonth() + 1
+            itemDate.getMonth() + 1,
           ).padStart(2, "0")}`;
           matchesMonth = itemMonthKey === selectedMonth;
         } else {
@@ -681,16 +693,16 @@ const Repairing_Dashboard = () => {
     const totalRepairs = data.length;
     const totalCost = data.reduce(
       (sum, item) => sum + (item.billAmount || 0),
-      0
+      0,
     );
     const completedRepairs = data.filter(
       (item) =>
         item.status?.toLowerCase().includes("completed") ||
-        item.status?.toLowerCase().includes("done")
+        item.status?.toLowerCase().includes("done"),
     ).length;
     const pendingRepairs = totalRepairs - completedRepairs;
     const inProgressRepairs = data.filter((item) =>
-      item.status?.toLowerCase().includes("progress")
+      item.status?.toLowerCase().includes("progress"),
     ).length;
     const avgCostPerRepair = totalRepairs > 0 ? totalCost / totalRepairs : 0;
 
@@ -716,7 +728,7 @@ const Repairing_Dashboard = () => {
       return selectedMachines.some(
         (machine) =>
           firmName.toLowerCase().includes(machine.toLowerCase()) ||
-          machine.toLowerCase().includes(firmName.toLowerCase())
+          machine.toLowerCase().includes(firmName.toLowerCase()),
       );
     });
   }, [maintenanceTasks, selectedMachines]);
@@ -734,9 +746,9 @@ const Repairing_Dashboard = () => {
             item["Serial No"] ||
             item["Machine Name"] ||
             item["Firm"] ||
-            item["Company Name"]
+            item["Company Name"],
         )
-        .filter(Boolean)
+        .filter(Boolean),
     );
 
     const completedTasks = data.filter((task) => {
@@ -788,7 +800,7 @@ const Repairing_Dashboard = () => {
     setSelectedMachines((prev) =>
       prev.includes(machine)
         ? prev.filter((item) => item !== machine)
-        : [...prev, machine]
+        : [...prev, machine],
     );
   };
 
@@ -985,7 +997,7 @@ const Repairing_Dashboard = () => {
               )}
             </div>
 
-            {/* Status Filter */}
+            {/* Stiatus Filter */}
             <div className="flex flex-col min-w-[150px]">
               <label className="mb-1 text-sm font-medium text-gray-700">
                 Status
@@ -1118,7 +1130,7 @@ const Repairing_Dashboard = () => {
               icon={IndianRupee}
               color="border-purple-500"
               subtext={`Avg: ${formatCurrency(
-                filteredRepairStats.avgCostPerRepair
+                filteredRepairStats.avgCostPerRepair,
               )}/repair`}
             />
             <StatCard
@@ -1325,7 +1337,7 @@ const Repairing_Dashboard = () => {
                       <td className="px-5 py-4 align-middle">
                         <span
                           className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                            row.status
+                            row.status,
                           )}`}
                         >
                           {row.status || "Pending"}
@@ -1368,7 +1380,7 @@ const Repairing_Dashboard = () => {
                     </div>
                     <span
                       className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(
-                        row.status
+                        row.status,
                       )}`}
                     >
                       {row.status || "Pending"}
@@ -1452,7 +1464,7 @@ const Repairing_Dashboard = () => {
                     >
                       All Tasks
                       <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-purple-200 rounded-full">
-                        {historyData.length}
+                        {filteredHistoryData.length}
                       </span>
                     </button>
                     <button
@@ -1556,8 +1568,8 @@ const Repairing_Dashboard = () => {
                               record.col15 === "Done"
                                 ? "bg-green-100 text-green-800"
                                 : record.col15 === "Not Done"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
                             {record.col15 || "Pending"}
