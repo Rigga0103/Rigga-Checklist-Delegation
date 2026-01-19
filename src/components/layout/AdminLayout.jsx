@@ -117,19 +117,44 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
 
   // Filter dataCategories based on user role
   const dataCategories = [
-    { id: "sales", name: "Checklist", link: "/dashboard/data/sales" },
+    {
+      id: "sales",
+      name: "Checklist",
+      link: "/dashboard/data/sales",
+    },
     {
       id: "approval",
       name: "Approval Pending",
       link: "/dashboard/data/approval",
+      hideForUsers: ["Pratap Kumar Rout", "Rakesh Kumar Rout"],
     },
   ];
 
   const getAccessibleDepartments = () => {
     const userRole = sessionStorage.getItem("role") || "user";
-    return dataCategories.filter(
-      (cat) => !cat.showFor || cat.showFor.includes(userRole),
-    );
+    const currentUsername = sessionStorage.getItem("username") || "";
+    const usernameLower = currentUsername.toLowerCase();
+
+    return dataCategories.filter((cat) => {
+      // Check if user should be hidden
+      const isHidden = cat.hideForUsers
+        ? cat.hideForUsers.some(
+            (hiddenUser) => hiddenUser.toLowerCase() === usernameLower,
+          )
+        : false;
+
+      if (isHidden) return false;
+
+      const roleMatch = !cat.showFor || cat.showFor.includes(userRole);
+      const userMatch = cat.showForUsers
+        ? cat.showForUsers.some(
+            (allowedUser) => allowedUser.toLowerCase() === usernameLower,
+          )
+        : true; // If no showForUsers specified, allow all
+
+      // If showForUsers is specified, user must match; otherwise just check role
+      return cat.showForUsers ? userMatch : roleMatch;
+    });
   };
 
   const accessibleDepartments = getAccessibleDepartments();
@@ -143,6 +168,16 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
     const userRole = getCurrentRole();
     const username = getCurrentUsername();
     const usernameLower = username.toLowerCase();
+    console.log(usernameLower, "usernameLower");
+
+    // Check if user should be hidden from this route
+    const isHidden = route.hideForUsers
+      ? route.hideForUsers.some(
+          (hiddenUser) => hiddenUser.toLowerCase() === usernameLower,
+        )
+      : false;
+    console.log(isHidden, "dfkjkj");
+    if (isHidden) return false;
 
     const roleMatch = route.showFor?.includes(userRole) || false;
     const userMatch = route.showForUsers
@@ -162,6 +197,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: LayoutDashboard,
       active: location.pathname === "/dashboard/admin",
       showFor: ["admin"],
+      hideForUsers: ["Pratap Kumar Rout", "Rakesh Kumar Rout"],
     },
     {
       href: "/dashboard/quick-task",
@@ -169,6 +205,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: Zap,
       active: location.pathname === "/dashboard/quick-task",
       showFor: ["admin"],
+      hideForUsers: ["Pratap Kumar Rout", "Rakesh Kumar Rout"],
     },
     {
       href: "/dashboard/assign-task",
@@ -176,6 +213,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: CheckSquare,
       active: location.pathname === "/dashboard/assign-task",
       showFor: ["admin"],
+      hideForUsers: ["Pratap Kumar Rout", "Rakesh Kumar Rout"],
     },
     {
       href: "/dashboard/delegation",
@@ -199,6 +237,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: Calendar,
       active: location.pathname === "/dashboard/calendar",
       showFor: ["admin", "user"],
+      hideForUsers: ["Pratap Kumar Rout", "Rakesh Kumar Rout"],
     },
   ];
 
