@@ -334,7 +334,7 @@ function RepairingPending() {
       } catch (parseError) {
         console.error("Failed to parse response as JSON:", responseText);
         throw new Error(
-          "Invalid response from server: " + responseText.substring(0, 200)
+          "Invalid response from server: " + responseText.substring(0, 200),
         );
       }
 
@@ -433,13 +433,13 @@ function RepairingPending() {
           prev.filter(
             (item) =>
               !selectedHistoryItems.some(
-                (selected) => selected._id === item._id
-              )
-          )
+                (selected) => selected._id === item._id,
+              ),
+          ),
         );
         setSelectedHistoryItems([]);
         setSuccessMessage(
-          `Successfully marked ${selectedHistoryItems.length} repairs as complete!`
+          `Successfully marked ${selectedHistoryItems.length} repairs as complete!`,
         );
         setTimeout(() => {
           fetchSheetData();
@@ -468,7 +468,7 @@ function RepairingPending() {
                 value
                   .toString()
                   .toLowerCase()
-                  .includes(searchTerm.toLowerCase())
+                  .includes(searchTerm.toLowerCase()),
             )
           : true;
         const matchesMember =
@@ -512,7 +512,7 @@ function RepairingPending() {
       selectedMembers.length > 0
         ? selectedMembers.reduce((stats, member) => {
             const memberTasks = historyData.filter(
-              (task) => task["col3"] === member
+              (task) => task["col3"] === member,
             ).length;
             return { ...stats, [member]: memberTasks };
           }, {})
@@ -536,7 +536,7 @@ function RepairingPending() {
       return membersList;
     } else {
       return membersList.filter(
-        (member) => member.toLowerCase() === username.toLowerCase()
+        (member) => member.toLowerCase() === username.toLowerCase(),
       );
     }
   };
@@ -546,7 +546,7 @@ function RepairingPending() {
       setLoading(true);
       const pendingRepairs = [];
       const response = await fetch(
-        `${CONFIG.APPS_SCRIPT_URL}?sheet=${CONFIG.SHEET_NAME}&action=fetch`
+        `${CONFIG.APPS_SCRIPT_URL}?sheet=${CONFIG.SHEET_NAME}&action=fetch`,
       );
       if (!response.ok) {
         throw new Error(`Failed to fetch data: ${response.status}`);
@@ -586,7 +586,7 @@ function RepairingPending() {
         let rowValues = [];
         if (row.c) {
           rowValues = row.c.map((cell) =>
-            cell && cell.v !== undefined ? cell.v : ""
+            cell && cell.v !== undefined ? cell.v : "",
           );
         } else if (Array.isArray(row)) {
           rowValues = row;
@@ -763,10 +763,9 @@ function RepairingPending() {
               </select>
             </div>
 
-            {/* Conditional fields based on status */}
-            {/* Cancel selected - show only Remarks */}
+            {/* Temporary Fix Applied - show only Remarks */}
             {editFormData.status &&
-              editFormData.status.toLowerCase().includes("cancel") && (
+              editFormData.status.includes("Temporary Fix Applied") && (
                 <div>
                   <label className="block mb-2 text-sm font-semibold text-gray-700">
                     Remarks <span className="text-red-500">*</span>
@@ -776,7 +775,7 @@ function RepairingPending() {
                     onChange={(e) =>
                       handleEditInputChange("remarks", e.target.value)
                     }
-                    placeholder="Enter reason for cancellation..."
+                    placeholder="Enter remarks..."
                     rows="3"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
@@ -1089,7 +1088,7 @@ function RepairingPending() {
                                 .filter((member) =>
                                   member
                                     .toLowerCase()
-                                    .includes(memberSearchTerm.toLowerCase())
+                                    .includes(memberSearchTerm.toLowerCase()),
                                 )
                                 .map((member, idx) => (
                                   <div
@@ -1113,7 +1112,7 @@ function RepairingPending() {
                               {getFilteredMembersList().filter((member) =>
                                 member
                                   .toLowerCase()
-                                  .includes(memberSearchTerm.toLowerCase())
+                                  .includes(memberSearchTerm.toLowerCase()),
                               ).length === 0 && (
                                 <div className="px-3 py-2 text-sm text-gray-500">
                                   No members found
@@ -1327,20 +1326,24 @@ function RepairingPending() {
                                 repair["col12"].includes("Completed")
                                   ? "bg-green-100 text-green-800"
                                   : repair["col12"] &&
-                                    repair["col12"].includes("In Progress")
-                                  ? "bg-blue-100 text-blue-800"
-                                  : repair["col12"] &&
-                                    repair["col12"].includes(
-                                      "Under Observation"
-                                    )
-                                  ? "bg-indigo-100 text-indigo-800"
-                                  : repair["col12"] &&
-                                    repair["col12"].includes("Temporary Fix")
-                                  ? "bg-purple-100 text-purple-800"
-                                  : repair["col12"] &&
-                                    repair["col12"].includes("Cancelled")
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                      repair["col12"].includes("In Progress")
+                                    ? "bg-blue-100 text-blue-800"
+                                    : repair["col12"] &&
+                                        repair["col12"].includes(
+                                          "Under Observation",
+                                        )
+                                      ? "bg-indigo-100 text-indigo-800"
+                                      : repair["col12"] &&
+                                          repair["col12"].includes(
+                                            "Temporary Fix",
+                                          )
+                                        ? "bg-purple-100 text-purple-800"
+                                        : repair["col12"] &&
+                                            repair["col12"].includes(
+                                              "Cancelled",
+                                            )
+                                          ? "bg-red-100 text-red-800"
+                                          : "bg-yellow-100 text-yellow-800"
                               }`}
                             >
                               {repair["col12"] || "Pending"}
@@ -1443,8 +1446,8 @@ function RepairingPending() {
                                 repair["col12"] === "Done"
                                   ? "bg-green-100 text-green-800"
                                   : repair["col12"] === "In Progress"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-gray-100 text-gray-800"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-gray-100 text-gray-800"
                               }`}
                             >
                               {repair["col12"] || "Pending"}
