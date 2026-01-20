@@ -62,6 +62,17 @@ function AccountDataPage() {
   });
 
   const [pendingTaskDateFilter, setPendingTaskDateFilter] = useState("");
+  const [showAllPendingTasks, setShowAllPendingTasks] = useState(false);
+  const [isTogglingTasks, setIsTogglingTasks] = useState(false);
+
+  const handleTogglePendingTasks = () => {
+    setIsTogglingTasks(true);
+    setTimeout(() => {
+      setShowAllPendingTasks((prev) => !prev);
+      setIsTogglingTasks(false);
+    }, 800);
+  };
+
 
   // NEW: Edit functionality states
   const [editingRows, setEditingRows] = useState(new Set());
@@ -692,15 +703,26 @@ function AccountDataPage() {
   // }, [accountData, searchTerm]);
 
   const filteredAccountData = useMemo(() => {
-    let filtered = searchTerm
-      ? accountData.filter((account) =>
-          Object.values(account).some(
-            (value) =>
-              value &&
-              value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-          )
+    let filtered = accountData;
+
+    // Apply Admin-specific default filter: Only show tasks assigned to the logged-in admin
+    // unless showAllPendingTasks is true.
+    if (userRole === "admin" && !showAllPendingTasks) {
+      filtered = filtered.filter(
+        (account) =>
+          (account["col4"] || "").toLowerCase() === username.toLowerCase()
+      );
+    }
+
+    if (searchTerm) {
+      filtered = filtered.filter((account) =>
+        Object.values(account).some(
+          (value) =>
+            value &&
+            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
-      : accountData;
+      );
+    }
 
     // Apply date filter if selected
     if (pendingTaskDateFilter) {
@@ -716,7 +738,14 @@ function AccountDataPage() {
     }
 
     return filtered.sort(sortDateWise);
-  }, [accountData, searchTerm, pendingTaskDateFilter]);
+  }, [
+    accountData,
+    searchTerm,
+    pendingTaskDateFilter,
+    userRole,
+    username,
+    showAllPendingTasks,
+  ]);
 
   const filteredHistoryData = useMemo(() => {
     return historyData
@@ -1415,9 +1444,29 @@ function AccountDataPage() {
               </p>
             </div>
 
-            <h1 className="sm:text-xl tracking-tight text-purple-700 text-center sm:text-left">
-              Pending Tasks: {filteredAccountData.length}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="sm:text-xl tracking-tight text-purple-700 text-center sm:text-left">
+                Pending Tasks: {filteredAccountData.length}
+              </h1>
+              {userRole === "admin" && !showHistory && (
+                <button
+                  onClick={handleTogglePendingTasks}
+                  disabled={isTogglingTasks}
+                  className="px-4 py-2 text-sm font-bold rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-purple-200/50 flex items-center gap-2 min-w-[180px] justify-center scale-100 hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isTogglingTasks ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      <span>Loading...</span>
+                    </>
+                  ) : showAllPendingTasks ? (
+                    "Show My Tasks Only"
+                  ) : (
+                    "Show All Pending Tasks"
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
           {loading ? (
