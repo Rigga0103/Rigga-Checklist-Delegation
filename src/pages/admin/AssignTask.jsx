@@ -19,7 +19,7 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
     const selectedDate = new Date(
       currentMonth.getFullYear(),
       currentMonth.getMonth(),
-      day
+      day,
     );
     onChange(selectedDate);
     onClose();
@@ -29,11 +29,11 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
     const days = [];
     const daysInMonth = getDaysInMonth(
       currentMonth.getFullYear(),
-      currentMonth.getMonth()
+      currentMonth.getMonth(),
     );
     const firstDayOfMonth = getFirstDayOfMonth(
       currentMonth.getFullYear(),
-      currentMonth.getMonth()
+      currentMonth.getMonth(),
     );
 
     // Add empty cells for days before the first day of the month
@@ -61,7 +61,7 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
           }`}
         >
           {day}
-        </button>
+        </button>,
       );
     }
 
@@ -70,13 +70,13 @@ const CalendarComponent = ({ date, onChange, onClose }) => {
 
   const prevMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
     );
   };
 
   const nextMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
     );
   };
 
@@ -256,7 +256,7 @@ export default function AssignTask() {
   const getLastTaskId = async (sheetName) => {
     try {
       const url = `https://docs.google.com/spreadsheets/d/1pjNOV1ogLtiMm-Ow9_UVbsd3oN52jA5FdLGLgKwqlcw/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(
-        sheetName
+        sheetName,
       )}`;
 
       const response = await fetch(url);
@@ -308,7 +308,7 @@ export default function AssignTask() {
       const sheetName = "Working Day Calendar";
 
       const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(
-        sheetName
+        sheetName,
       )}`;
 
       const response = await fetch(url);
@@ -410,7 +410,7 @@ export default function AssignTask() {
       const workingDays = await fetchWorkingDays();
       if (workingDays.length === 0) {
         alert(
-          "Could not retrieve working days. Please make sure the Working Day Calendar sheet is properly set up."
+          "Could not retrieve working days. Please make sure the Working Day Calendar sheet is properly set up.",
         );
         return;
       }
@@ -432,7 +432,7 @@ export default function AssignTask() {
 
       if (futureDates.length === 0) {
         alert(
-          "No working days found on or after your selected date. Please choose a different start date or update the Working Day Calendar."
+          "No working days found on or after your selected date. Please choose a different start date or update the Working Day Calendar.",
         );
         return;
       }
@@ -443,14 +443,14 @@ export default function AssignTask() {
       if (startIndex === -1) {
         startIndex = 0;
         alert(
-          `The selected date (${startDateStr}) is not in the Working Day Calendar. The next available working day will be used instead: ${futureDates[0]}`
+          `The selected date (${startDateStr}) is not in the Working Day Calendar. The next available working day will be used instead: ${futureDates[0]}`,
         );
       }
 
       const taskDateStr = futureDates[startIndex];
       const taskDateTimeStr = formatDateTimeForStorage(
         new Date(taskDateStr.split("/").reverse().join("-")),
-        time
+        time,
       );
 
       const tasks = [
@@ -513,7 +513,7 @@ export default function AssignTask() {
 
       // Calculate difference in days
       const difference = Math.abs(
-        (currentDate - targetDate) / (1000 * 60 * 60 * 24)
+        (currentDate - targetDate) / (1000 * 60 * 60 * 24),
       );
 
       if (currentDate >= targetDate && difference < minDifference) {
@@ -531,7 +531,7 @@ export default function AssignTask() {
         const currentDate2 = new Date(
           workingYear2,
           workingMonth2 - 1,
-          workingDay2
+          workingDay2,
         );
 
         if (currentDate2 < targetDate) {
@@ -616,7 +616,7 @@ export default function AssignTask() {
     try {
       if (generatedTasks.length === 0) {
         alert(
-          "Please generate tasks first by clicking Preview Generated Tasks"
+          "Please generate tasks first by clicking Preview Generated Tasks",
         );
         setIsSubmitting(false);
         return;
@@ -679,13 +679,13 @@ export default function AssignTask() {
           method: "POST",
           body: formPayload,
           mode: "no-cors",
-        }
+        },
       );
 
       alert(
         `Successfully submitted ${generatedTasks.length} task${
           generatedTasks.length !== 1 ? "s" : ""
-        } to ${submitSheetName} sheet!`
+        } to ${submitSheetName} sheet!`,
       );
       // Reset form
       setFormData({

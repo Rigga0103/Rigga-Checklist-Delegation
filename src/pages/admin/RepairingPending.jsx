@@ -59,6 +59,7 @@ function RepairingPending() {
   const [endDate, setEndDate] = useState("");
   const [userRole, setUserRole] = useState("");
   const [username, setUsername] = useState("");
+  
 
   // Admin history selection states
   const [selectedHistoryItems, setSelectedHistoryItems] = useState([]);
@@ -1278,7 +1279,8 @@ function RepairingPending() {
                       <th className="px-3 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase min-w-[100px]">
                         Bill Amount
                       </th>
-                      {userRole === "admin" && (
+                      {(userRole === "admin" ||
+                        username === "pratap kumar rout") && (
                         <th className="px-3 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase min-w-[80px]">
                           Action
                         </th>
@@ -1359,7 +1361,8 @@ function RepairingPending() {
                               {repair["col15"] ? `₹${repair["col15"]}` : "—"}
                             </div>
                           </td>
-                          {userRole === "admin" && (
+                          {(userRole === "admin" ||
+                            username === "pratap kumar rout") && (
                             <td className="px-3 py-4 min-w-[80px]">
                               <button
                                 onClick={() => openEditModal(repair)}
@@ -1375,7 +1378,12 @@ function RepairingPending() {
                     ) : (
                       <tr>
                         <td
-                          colSpan={userRole === "admin" ? 10 : 8}
+                          colSpan={
+                            userRole === "admin" ||
+                            username === "pratap kumar rout"
+                              ? 10
+                              : 8
+                          }
                           className="px-6 py-4 text-center text-gray-500"
                         >
                           {searchTerm ||
@@ -1455,7 +1463,8 @@ function RepairingPending() {
                           </div>
                         </div>
 
-                        {userRole === "admin" && (
+                        {(userRole === "admin" ||
+                          username === "pratap kumar rout") && (
                           <div className="pt-2 border-t">
                             <button
                               onClick={() => openEditModal(repair)}

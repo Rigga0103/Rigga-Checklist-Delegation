@@ -277,7 +277,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       active: location.pathname === "/repairing-pending",
       showFor: ["admin"],
       showForUsers: [
-        // "pratap kumar rout",
+        "pratap kumar rout",
         "Rakesh Kumar Rout",
         "Kamal Sharma 65-18",
         "Santosh Das 52-18",
