@@ -187,6 +187,7 @@ export default function AssignTask() {
     enableReminders: true,
     requireAttachment: false,
   });
+  console.log(formData, "formdata");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -629,9 +630,6 @@ export default function AssignTask() {
         return;
       }
 
-      // NEW: Determine the sheet based on department and frequency:
-      // - "one-time" frequency → DELEGATION sheet (department doesn't matter)
-      // - All other frequencies → Department-specific sheet (using department name as sheet name)
       let submitSheetName;
 
       if (formData.frequency === "one-time") {

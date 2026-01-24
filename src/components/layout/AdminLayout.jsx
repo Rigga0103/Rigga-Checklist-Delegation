@@ -1,36 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  CheckSquare,
-  ClipboardList,
-  Home,
-  LogOut,
-  Menu,
-  Database,
-  ChevronDown,
-  ChevronRight,
-  Zap,
-  FileText,
-  X,
-  Play,
-  Pause,
-  KeyRound,
-  Video,
+  BookmarkCheck,
   Calendar,
   CalendarCheck,
+  CheckSquare,
+  ChevronDown,
   CirclePlus,
-  BookmarkCheck,
-  MoreHorizontalIcon,
-  PersonStanding,
-  FormInput,
-  LayoutDashboard,
-  Wrench,
-  Settings,
+  ClipboardList,
   Clock,
+  FileText,
+  FormInput,
   History,
+  Home,
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  Video,
+  Wrench,
+  X,
+  Zap
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
   const location = useLocation();
@@ -81,7 +75,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
 
       const typingInterval = setInterval(() => {
         if (currentIndex <= welcomeText.length) {
-          setAnimatedText(welcomeText.slice(0, currentIndex));
+          setHeaderAnimatedText(welcomeText.slice(0, currentIndex));
           currentIndex++;
         } else {
           clearInterval(typingInterval);
@@ -253,7 +247,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
         "pratap kumar rout",
         "Rakesh Kumar Rout",
         "Kamal Sharma 65-18",
-        "Santosh Das 52-18",
+        
       ],
     },
     {
@@ -262,12 +256,12 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: FormInput,
       active: location.pathname === "/repairing-form",
       showFor: ["admin"],
-      showForUsers: ["pratap kumar rout"],
+      
       showForUsers: [
         "pratap kumar rout",
         "Rakesh Kumar Rout",
         "Kamal Sharma 65-18",
-        "Santosh Das 52-18",
+        
       ],
     },
     {
@@ -280,7 +274,8 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
         "pratap kumar rout",
         "Rakesh Kumar Rout",
         "Kamal Sharma 65-18",
-        "Santosh Das 52-18",
+        "Mohan Chandrakar",
+        
       ],
     },
     {
@@ -289,12 +284,11 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       icon: History,
       active: location.pathname === "/repairing-history",
       showFor: ["admin"],
-      showForUsers: ["pratap kumar rout"],
       showForUsers: [
         "pratap kumar rout",
         "Rakesh Kumar Rout",
         "Kamal Sharma 65-18",
-        "Santosh Das 52-18",
+        
       ],
     },
   ];
